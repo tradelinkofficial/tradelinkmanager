@@ -19,7 +19,7 @@
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease}
     .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.2px;background:#f59e0b;color:#111827}
+    .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.2px;background:#f59e0b;color:#111827;white-space:nowrap}
     .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .row span:first-child{color:#94a3b8}.row span:last-child{font-weight:bold;text-align:right}
     .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}
@@ -32,6 +32,15 @@
     input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:#f8fafc;font-size:15px;outline:none;transition:.25s}
     input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
     input:disabled{opacity:.65;cursor:not-allowed;color:#64748b}
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .toggle-row span{color:#94a3b8;font-size:13px}
+    .switch{position:relative;width:52px;height:30px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#334155;border-radius:999px;transition:.25s;border:1px solid rgba(255,255,255,.08)}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:4px;bottom:3px;background:#94a3b8;border-radius:50%;transition:.25s}
+    .switch input:checked + .slider{background:#22c55e}
+    .switch input:checked + .slider:before{transform:translateX(22px);background:#fff}
+    .switch input:disabled + .slider{opacity:.55;cursor:not-allowed}
     .save-btn{border:none;border-radius:14px;padding:14px 16px;background:#3b82f6;color:#fff;font-weight:bold;cursor:pointer;transition:.25s}
     .save-btn:hover{background:#2563eb;box-shadow:0 0 20px rgba(59,130,246,.35)}
     .save-btn:disabled{background:#334155;color:#64748b;cursor:not-allowed;box-shadow:none}
@@ -84,19 +93,28 @@
       <h3>Settings Information</h3>
       <div class="row"><span>Theme</span><span id="theme">-</span></div>
       <div class="row"><span>Telegram Enabled</span><span id="telegramEnabled">-</span></div>
-      <div class="row"><span>Allow Change Password</span><span id="allowPassword">-</span></div>
     </div>
 
     <div class="card">
       <h3>Change Password</h3>
       <div class="password-box">
-        <input type="password" id="newPassword" placeholder="Enter new password">
+        <input type="password" id="currentPassword" placeholder="Current password">
+        <input type="password" id="newPassword" placeholder="New password">
         <button class="save-btn" id="passwordBtn" onclick="changePassword()">Save Password</button>
       </div>
     </div>
 
     <div class="card">
-      <h3>Telegram Settings <span class="badge" id="telegramBadge">PRO ONLY</span></h3>
+      <h3>Telegram Settings <span class="badge" id="telegramBadge">PRO FEATURE 🔒</span></h3>
+
+      <div class="toggle-row">
+        <span>Telegram Notification</span>
+        <label class="switch">
+          <input type="checkbox" id="telegramToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
       <div class="field"><label>Telegram Chat ID</label><input type="text" id="telegramChatId" placeholder="Telegram Chat ID"></div>
       <div class="field"><label>Telegram Bot Token</label><input type="password" id="telegramBotToken" placeholder="Telegram Bot Token"></div>
       <button class="save-btn" id="telegramBtn" onclick="saveTelegramSettings()">Save Telegram Settings</button>
@@ -109,7 +127,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"};
   const app = initializeApp(firebaseConfig);
@@ -136,19 +154,23 @@
     const toast = document.getElementById("toast");
     toast.innerText = message;
     toast.classList.add("show");
-    setTimeout(()=>toast.classList.remove("show"),2200);
+    setTimeout(()=>toast.classList.remove("show"),2400);
   }
 
   function updateTelegramUI(){
     const isPro = clientPackage === "PRO";
+
+    document.getElementById("telegramToggle").disabled = !isPro;
     document.getElementById("telegramChatId").disabled = !isPro;
     document.getElementById("telegramBotToken").disabled = !isPro;
     document.getElementById("telegramBtn").disabled = !isPro;
+
     document.getElementById("telegramBadge").style.display = isPro ? "none" : "inline-flex";
     document.getElementById("telegramLockNote").style.display = isPro ? "none" : "block";
   }
 
   function updatePasswordUI(){
+    document.getElementById("currentPassword").disabled = !allowChangePassword;
     document.getElementById("newPassword").disabled = !allowChangePassword;
     document.getElementById("passwordBtn").disabled = !allowChangePassword;
   }
@@ -203,11 +225,9 @@
 
     setText("theme",data.theme);
     setText("telegramEnabled",telegramEnabled ? "ENABLED" : "DISABLED");
-    setText("allowPassword",allowChangePassword ? "YES" : "NO");
 
     document.getElementById("telegramEnabled").className = telegramEnabled ? "status-green" : "status-red";
-    document.getElementById("allowPassword").className = allowChangePassword ? "status-green" : "status-red";
-
+    document.getElementById("telegramToggle").checked = telegramEnabled;
     document.getElementById("telegramChatId").value = data.telegramChatId || "";
     document.getElementById("telegramBotToken").value = data.telegramBotToken || "";
 
@@ -218,12 +238,26 @@
   window.changePassword = async function(){
     if(!allowChangePassword){showToast("Password change is disabled.");return;}
 
+    const currentPassword = document.getElementById("currentPassword").value.trim();
     const newPassword = document.getElementById("newPassword").value.trim();
-    if(newPassword.length < 4){showToast("Password minimum 4 characters.");return;}
+
+    if(currentPassword.length < 1){showToast("Please enter current password.");return;}
+    if(newPassword.length < 4){showToast("New password minimum 4 characters.");return;}
 
     try{
+      const snap = await get(userRef);
+      const userData = snap.val() || {};
+
+      if(userData.password !== currentPassword){
+        showToast("Current password is incorrect.");
+        return;
+      }
+
       await update(userRef,{password:newPassword});
+
+      document.getElementById("currentPassword").value = "";
       document.getElementById("newPassword").value = "";
+
       showToast("Password updated successfully.");
     }catch(error){
       console.error(error);
@@ -234,12 +268,13 @@
   window.saveTelegramSettings = async function(){
     if(clientPackage !== "PRO"){showToast("Telegram settings require PRO package.");return;}
 
+    const telegramToggle = document.getElementById("telegramToggle").checked;
     const telegramChatId = document.getElementById("telegramChatId").value.trim();
     const telegramBotToken = document.getElementById("telegramBotToken").value.trim();
 
     try{
       await update(settingsRef,{
-        telegramEnabled:true,
+        telegramEnabled:telegramToggle,
         telegramChatId:telegramChatId,
         telegramBotToken:telegramBotToken
       });
