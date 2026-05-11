@@ -26,7 +26,7 @@
       justify-content:space-between;
       align-items:center;
       gap:14px;
-      margin-bottom:18px;
+      margin-bottom:16px;
       flex-wrap:wrap;
     }
 
@@ -42,6 +42,7 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      margin-bottom:16px;
     }
 
     .nav a,.nav button{
@@ -49,37 +50,22 @@
       text-decoration:none;
       padding:11px 15px;
       border-radius:12px;
-      color:#fff;
+      color:#f8fafc;
       font-size:13px;
       font-weight:bold;
       cursor:pointer;
       transition:.25s;
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow:0 12px 30px rgba(0,0,0,.18);
     }
 
-    .blue{background:#3b82f6}
-    .blue:hover{background:#2563eb}
-    .orange{background:#f59e0b}
-    .red{background:#ef4444}
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:16px;
-      margin-bottom:16px;
+    .nav a:hover,.nav button:hover{
+      background:#1e293b;
+      transform:translateY(-1px);
     }
 
-    .main-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:16px;
-      margin-bottom:16px;
-    }
-
-    .bottom-grid{
-      display:grid;
-      grid-template-columns:1.4fr .8fr;
-      gap:16px;
-    }
+    .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
 
     .card{
       background:rgba(30,41,59,.78);
@@ -89,6 +75,7 @@
       box-shadow:0 20px 50px rgba(0,0,0,.25);
       backdrop-filter:blur(12px);
       animation:fadeIn .5s ease;
+      margin-bottom:16px;
     }
 
     .card h3{
@@ -97,6 +84,19 @@
       margin-bottom:12px;
       font-weight:normal;
       letter-spacing:.3px;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .bottom-grid{
+      display:grid;
+      grid-template-columns:1.4fr .8fr;
+      gap:16px;
     }
 
     .value{
@@ -118,6 +118,7 @@
     .row{
       display:flex;
       justify-content:space-between;
+      align-items:center;
       padding:11px 0;
       border-bottom:1px solid rgba(255,255,255,.06);
       gap:12px;
@@ -125,6 +126,27 @@
 
     .row span:first-child{color:#94a3b8}
     .row span:last-child{text-align:right;font-weight:bold}
+
+    .balance-row{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .eye-btn{
+      width:34px;
+      height:30px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#111827;
+      color:#94a3b8;
+      cursor:pointer;
+      font-size:15px;
+    }
 
     .signal{
       display:inline-flex;
@@ -198,17 +220,17 @@
     }
 
     @media(max-width:950px){
-      .grid{grid-template-columns:repeat(2,1fr)}
-      .main-grid,.bottom-grid{grid-template-columns:1fr}
+      .quick-grid{grid-template-columns:1fr}
+      .bottom-grid{grid-template-columns:1fr}
     }
 
     @media(max-width:520px){
       body{padding:14px}
-      .grid{grid-template-columns:1fr}
       .brand h1{font-size:21px}
       .value{font-size:24px}
       .nav{width:100%}
       .nav a,.nav button{flex:1;text-align:center}
+      .row{font-size:14px}
     }
   </style>
 </head>
@@ -222,27 +244,32 @@
       <h1>TRADELINK MANAGER</h1>
       <p>DARK TRADING PRO Dashboard MVP v1.00</p>
     </div>
+  </div>
 
-    <div class="nav">
-      <a class="blue" href="controlpanel.html">Control Panel</a>
-      <a class="orange" href="setting.html">Setting</a>
-      <button class="red" onclick="logout()">Logout</button>
+  <div class="nav">
+    <a href="controlpanel.html">Control Panel</a>
+    <a href="setting.html">Setting</a>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="card">
+    <h3>Account Information</h3>
+
+    <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+    <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
+    <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
+    <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+
+    <div class="row">
+      <span>Balance</span>
+      <span class="balance-row">
+        <span id="balance">0.00</span>
+        <button class="eye-btn" onclick="toggleBalance()" id="eyeBtn" title="Show / Hide Balance">👁</button>
+      </span>
     </div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h3>Balance</h3>
-      <div class="value" id="balance">0.00</div>
-      <div class="small">Account balance</div>
-    </div>
-
-    <div class="card">
-      <h3>Equity</h3>
-      <div class="value info" id="equity">0.00</div>
-      <div class="small">Live equity</div>
-    </div>
-
+  <div class="quick-grid">
     <div class="card">
       <h3>Floating P/L</h3>
       <div class="value" id="floating">0.00</div>
@@ -257,34 +284,14 @@
       </div>
       <div class="small" id="lastUpdate">Last update: -</div>
     </div>
-  </div>
-
-  <div class="main-grid">
-
-    <div class="card">
-      <h3>Account Information</h3>
-
-      <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
-      <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
-      <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
-      <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
-      <div class="row"><span>Account Login</span><span id="accountLogin">0</span></div>
-      <div class="row"><span>Account Name</span><span id="accountName">-</span></div>
-      <div class="row"><span>Broker</span><span id="broker">-</span></div>
-      <div class="row"><span>Server</span><span id="server">-</span></div>
-    </div>
 
     <div class="card">
       <h3>Trading Statistics</h3>
-
       <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
       <div class="row"><span>Sell Count</span><span class="loss" id="sellCount">0</span></div>
       <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
       <div class="row"><span>Margin</span><span id="margin">0.00</span></div>
-      <div class="row"><span>Profit Today</span><span id="profitToday">0.00</span></div>
-      <div class="row"><span>Drawdown</span><span id="drawdown">0.00</span></div>
     </div>
-
   </div>
 
   <div class="bottom-grid">
@@ -355,6 +362,8 @@
 
   let rawHistory = {};
   let analyticsMode = "daily";
+  let balanceValue = 0;
+  let balanceVisible = localStorage.getItem("balanceVisible") !== "false";
 
   function num(value){
     return Number(value || 0);
@@ -367,6 +376,20 @@
   function setText(id,value){
     document.getElementById(id).innerText = value ?? "-";
   }
+
+  function renderBalance(){
+    const balanceEl = document.getElementById("balance");
+    const eyeBtn = document.getElementById("eyeBtn");
+
+    balanceEl.innerText = balanceVisible ? money(balanceValue) : "*****";
+    eyeBtn.innerText = balanceVisible ? "👁" : "🙈";
+  }
+
+  window.toggleBalance = function(){
+    balanceVisible = !balanceVisible;
+    localStorage.setItem("balanceVisible", balanceVisible ? "true" : "false");
+    renderBalance();
+  };
 
   onValue(profileRef, (snapshot) => {
     const data = snapshot.val() || {};
@@ -381,11 +404,12 @@
   onValue(monitorRef, (snapshot) => {
     const data = snapshot.val() || {};
 
+    balanceValue = num(data.balance);
+    renderBalance();
+
     const floating = num(data.floating_pl || data.floating);
     const signal = data.mt5_signal || "DISCONNECTED";
 
-    setText("balance", money(data.balance));
-    setText("equity", money(data.equity));
     setText("margin", money(data.margin));
 
     const floatingEl = document.getElementById("floating");
@@ -408,11 +432,6 @@
     setText("lastUpdate", "Last update: " + lastUpdate);
     setText("activityUpdate", lastUpdate);
 
-    setText("accountLogin", data.account_login || 0);
-    setText("accountName", data.account_name || "-");
-    setText("broker", data.broker || "-");
-    setText("server", data.server || "-");
-
     const buy = num(data.buy_count);
     const sell = num(data.sell_count);
     const total = data.total_trades !== undefined ? num(data.total_trades) : buy + sell;
@@ -430,7 +449,6 @@
       labels: [],
       datasets: [
         {label:"Balance",data:[],borderWidth:2,tension:.35},
-        {label:"Equity",data:[],borderWidth:2,tension:.35},
         {label:"Floating P/L",data:[],borderWidth:2,tension:.35}
       ]
     },
@@ -462,9 +480,6 @@
     if(latestKey && rawHistory[latestKey]){
       const latest = rawHistory[latestKey];
 
-      setText("profitToday", money(latest.profit_today));
-      setText("drawdown", money(latest.drawdown));
-
       if(latest.total_trades !== undefined){
         setText("totalTrades", num(latest.total_trades));
       }
@@ -474,7 +489,6 @@
   function renderHistory(){
     const labels = [];
     const balanceData = [];
-    const equityData = [];
     const floatingData = [];
 
     const grouped = {};
@@ -493,7 +507,6 @@
 
       grouped[key] = {
         balance: num(item.balance),
-        equity: num(item.equity),
         floating_pl: num(item.floating_pl || item.floating)
       };
     });
@@ -501,14 +514,12 @@
     Object.keys(grouped).sort().forEach(key => {
       labels.push(key);
       balanceData.push(grouped[key].balance);
-      equityData.push(grouped[key].equity);
       floatingData.push(grouped[key].floating_pl);
     });
 
     historyChart.data.labels = labels;
     historyChart.data.datasets[0].data = balanceData;
-    historyChart.data.datasets[1].data = equityData;
-    historyChart.data.datasets[2].data = floatingData;
+    historyChart.data.datasets[1].data = floatingData;
     historyChart.update();
   }
 
