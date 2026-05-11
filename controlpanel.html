@@ -9,42 +9,61 @@
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
     body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,#0f172a,#111827);color:#f8fafc;padding:18px}
     .container{max-width:1150px;margin:auto}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
     .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
     .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
-    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
     .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:#f8fafc;font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.18)}
     .nav a:hover,.nav button:hover{background:#1e293b;transform:translateY(-1px)}
     .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
-    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);margin-bottom:16px;animation:fadeIn .5s ease}
+
+    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);margin-bottom:14px;animation:fadeIn .5s ease}
+    .card.compact{padding:14px 16px}
     .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
-    .profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .mini{background:#111827;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .mini span{display:block;color:#94a3b8;font-size:12px;margin-bottom:6px}
-    .mini strong{font-size:16px;color:#f8fafc}
+
+    .profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .mini{background:#111827;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:10px 12px}
+    .mini span{display:block;color:#94a3b8;font-size:11px;margin-bottom:4px}
+    .mini strong{font-size:14px;color:#f8fafc}
     .package-basic{color:#06b6d4!important}.package-pro{color:#22c55e!important}
+
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .action-btn{width:100%;border:none;border-radius:16px;padding:16px 14px;color:#fff;font-weight:bold;font-size:15px;cursor:pointer;transition:.25s;min-height:58px}
+
+    .action-wrap{position:relative}
+    .action-btn{width:100%;border:none;border-radius:16px;padding:16px 14px;color:#fff;font-weight:bold;font-size:15px;cursor:pointer;transition:.25s;min-height:58px;position:relative}
     .action-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
     .btn-blue{background:#3b82f6}.btn-green{background:#22c55e}.btn-red{background:#ef4444}.btn-orange{background:#f59e0b}.btn-dark{background:#111827;border:1px solid rgba(255,255,255,.08)}
-    .action-btn:disabled{background:#334155!important;color:#64748b!important;cursor:not-allowed;transform:none;filter:none}
-    .input-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px;align-items:center}
+    .action-btn:disabled{background:#334155!important;color:#94a3b8!important;cursor:not-allowed;transform:none;filter:none;opacity:.78}
+
+    .pro-badge{display:none;position:absolute;top:8px;right:8px;background:#f59e0b;color:#111827;font-size:10px;font-weight:900;border-radius:999px;padding:4px 7px;letter-spacing:.2px;pointer-events:none}
+    .basic-locked .pro-badge{display:inline-flex}
+
+    .input-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px;align-items:center;position:relative}
     .input-row label{grid-column:1 / -1;color:#94a3b8;font-size:13px;margin-bottom:-2px}
     input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:#f8fafc;font-size:15px;outline:none;transition:.25s}
     input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
-    .set-btn{border:none;border-radius:14px;padding:14px 16px;color:#fff;font-weight:bold;cursor:pointer;min-width:100px}
-    .notice{padding:14px;border-radius:16px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);color:#bae6fd;font-size:13px;line-height:1.5;margin-bottom:16px}
+    input:disabled{opacity:.7;cursor:not-allowed}
+    .set-btn{border:none;border-radius:14px;padding:14px 16px;color:#fff;font-weight:bold;cursor:pointer;min-width:100px;position:relative}
+    .set-btn:disabled{background:#334155!important;color:#94a3b8!important;cursor:not-allowed;opacity:.78}
+
+    .note{padding:14px;border-radius:16px;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.08);color:#f8fafc;font-size:13px;line-height:1.55;margin-bottom:14px}
+    .note strong{color:#fff}
+    .note span{color:#cbd5e1}
+
     .locked{display:none;margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#fcd34d;font-size:13px}
+
     .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);min-width:260px;max-width:calc(100% - 28px);background:#1e293b;border:1px solid rgba(255,255,255,.08);color:#f8fafc;padding:13px 16px;border-radius:14px;box-shadow:0 18px 45px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center;font-size:14px}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
     .modal{position:fixed;inset:0;background:rgba(2,6,23,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}
     .modal-box{width:100%;max-width:420px;background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:20px;box-shadow:0 25px 80px rgba(0,0,0,.55)}
     .modal-box h3{color:#f8fafc;margin-bottom:8px;font-size:18px}.modal-box p{color:#94a3b8;font-size:14px;line-height:1.5;margin-bottom:18px}
     .modal-actions{display:flex;gap:10px;justify-content:flex-end}.modal-actions button{border:none;border-radius:12px;padding:11px 14px;cursor:pointer;color:#fff;font-weight:bold}
+
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:900px){.grid{grid-template-columns:1fr}.profile-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.btn-grid{grid-template-columns:1fr}.profile-grid{grid-template-columns:1fr}.input-row{grid-template-columns:1fr}.set-btn{width:100%}.modal-actions{flex-direction:column}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.btn-grid{grid-template-columns:1fr}.profile-grid{grid-template-columns:repeat(2,1fr)}.mini{padding:9px 10px}.mini strong{font-size:13px}.input-row{grid-template-columns:1fr}.set-btn{width:100%}.modal-actions{flex-direction:column}}
   </style>
 </head>
 
@@ -58,7 +77,7 @@
     <button class="logoutBtn" onclick="logout()">Logout</button>
   </div>
 
-  <div class="card">
+  <div class="card compact">
     <h3>Client Access</h3>
     <div class="profile-grid">
       <div class="mini"><span>Client ID</span><strong id="clientIdView">-</strong></div>
@@ -68,20 +87,30 @@
     </div>
   </div>
 
-  <div class="notice">
-    BASIC package: Close All, Set Stop Loss, Set Take Profit, Set Break Even sahaja.
-    PRO package: semua fungsi control panel aktif.
+  <div class="note">
+    <strong>Note:</strong>
+    <span>BASIC package can use Close All, Set Stop Loss, Set Take Profit, and Set Break Even only. PRO package unlocks all control panel functions.</span>
   </div>
 
   <div class="grid">
     <div class="card">
       <h3>Trading Actions</h3>
       <div class="btn-grid">
-        <button class="action-btn btn-red basic-action" onclick="confirmCommand('close_all', true, 'Close All Positions')">Close All</button>
-        <button class="action-btn btn-green pro-action" onclick="confirmCommand('close_profit', true, 'Close Profit Positions')">Close Profit</button>
-        <button class="action-btn btn-red pro-action" onclick="confirmCommand('close_loss', true, 'Close Loss Positions')">Close Loss</button>
+        <div class="action-wrap">
+          <button class="action-btn btn-red basic-action" onclick="confirmCommand('close_all', true, 'Close All Positions')">Close All</button>
+        </div>
+
+        <div class="action-wrap pro-wrap">
+          <button class="action-btn btn-green pro-action" onclick="confirmCommand('close_profit', true, 'Close Profit Positions')">Close Profit</button>
+          <span class="pro-badge">Pro Only</span>
+        </div>
+
+        <div class="action-wrap pro-wrap">
+          <button class="action-btn btn-red pro-action" onclick="confirmCommand('close_loss', true, 'Close Loss Positions')">Close Loss</button>
+          <span class="pro-badge">Pro Only</span>
+        </div>
       </div>
-      <div class="locked" id="proLockedNotice">PRO functions dikunci untuk BASIC package.</div>
+      <div class="locked" id="proLockedNotice">Upgrade to PRO to unlock advanced trading actions.</div>
     </div>
 
     <div class="card">
@@ -93,8 +122,19 @@
 
     <div class="card">
       <h3>PRO Entry Count Control</h3>
-      <div class="input-row"><label>Close Low Profit Entry Count</label><input type="number" id="lowProfitInput" placeholder="Example: 5" min="1" step="1"><button class="set-btn btn-orange pro-action" onclick="submitNumberCommand('close_low_profit_count','lowProfitInput','Close Low Profit Count')">Send</button></div>
-      <div class="input-row"><label>Close High Profit Entry Count</label><input type="number" id="highProfitInput" placeholder="Example: 5" min="1" step="1"><button class="set-btn btn-green pro-action" onclick="submitNumberCommand('close_high_profit_count','highProfitInput','Close High Profit Count')">Send</button></div>
+      <div class="input-row pro-wrap">
+        <label>Close Low Profit Entry Count</label>
+        <input class="pro-input" type="number" id="lowProfitInput" placeholder="Example: 5" min="1" step="1">
+        <button class="set-btn btn-orange pro-action" onclick="submitNumberCommand('close_low_profit_count','lowProfitInput','Close Low Profit Count')">Send</button>
+        <span class="pro-badge">Pro Only</span>
+      </div>
+
+      <div class="input-row pro-wrap">
+        <label>Close High Profit Entry Count</label>
+        <input class="pro-input" type="number" id="highProfitInput" placeholder="Example: 5" min="1" step="1">
+        <button class="set-btn btn-green pro-action" onclick="submitNumberCommand('close_high_profit_count','highProfitInput','Close High Profit Count')">Send</button>
+        <span class="pro-badge">Pro Only</span>
+      </div>
     </div>
 
     <div class="card">
@@ -154,14 +194,26 @@
 
   function setPackageUI(pkg){
     clientPackage = (pkg || "BASIC").toUpperCase();
+
     const packageEl = document.getElementById("clientPackage");
     packageEl.innerText = clientPackage;
     packageEl.className = clientPackage === "PRO" ? "package-pro" : "package-basic";
+
     const isPro = clientPackage === "PRO";
+
     document.querySelectorAll(".pro-action").forEach(el => {
       el.disabled = !isPro;
-      el.style.display = isPro ? "" : "none";
     });
+
+    document.querySelectorAll(".pro-input").forEach(el => {
+      el.disabled = !isPro;
+    });
+
+    document.querySelectorAll(".pro-wrap").forEach(el => {
+      if(isPro){ el.classList.remove("basic-locked"); }
+      else{ el.classList.add("basic-locked"); }
+    });
+
     document.getElementById("proLockedNotice").style.display = isPro ? "none" : "block";
   }
 
