@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeLink Manager | Settings</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+
+    body{
+      min-height:100vh;
+      background:
+      radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),
+      linear-gradient(135deg,#0f172a,#111827);
+      color:#f8fafc;
+      padding:18px;
+    }
+
+    .container{max-width:1150px;margin:auto}
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .brand h1{
+      font-size:24px;
+      letter-spacing:1px;
+      text-shadow:0 0 18px rgba(59,130,246,.7);
+    }
+
+    .brand p{
+      font-size:13px;
+      color:#94a3b8;
+      margin-top:4px;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .nav a,.nav button{
+      border:none;
+      text-decoration:none;
+      padding:11px 15px;
+      border-radius:12px;
+      color:#f8fafc;
+      font-size:13px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.25s;
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow:0 12px 30px rgba(0,0,0,.18);
+    }
+
+    .nav a:hover,.nav button:hover{
+      background:#1e293b;
+      transform:translateY(-1px);
+      box-shadow:0 0 18px rgba(59,130,246,.28);
+    }
+
+    .logoutBtn{
+      background:rgba(239,68,68,.18)!important;
+      color:#fca5a5!important;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .card{
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 20px 50px rgba(0,0,0,.25);
+      backdrop-filter:blur(12px);
+      animation:fadeIn .5s ease;
+    }
+
+    .card h3{
+      color:#94a3b8;
+      font-size:13px;
+      margin-bottom:12px;
+      font-weight:normal;
+      letter-spacing:.3px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:11px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .row span:first-child{
+      color:#94a3b8;
+    }
+
+    .row span:last-child{
+      font-weight:bold;
+      text-align:right;
+    }
+
+    .status-green{color:#22c55e}
+    .status-red{color:#ef4444}
+    .status-blue{color:#3b82f6}
+    .status-orange{color:#f59e0b}
+
+    .signal{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:#ef4444;
+      box-shadow:0 0 12px rgba(239,68,68,.8);
+      animation:pulse 1.5s infinite;
+    }
+
+    .dot.connected{
+      background:#22c55e;
+      box-shadow:0 0 12px rgba(34,197,94,.8);
+    }
+
+    .password-box{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    input{
+      width:100%;
+      padding:14px 15px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0f172a;
+      color:#f8fafc;
+      font-size:15px;
+      outline:none;
+      transition:.25s;
+    }
+
+    input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,.18);
+    }
+
+    .save-btn{
+      border:none;
+      border-radius:14px;
+      padding:14px 16px;
+      background:#3b82f6;
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.25s;
+    }
+
+    .save-btn:hover{
+      background:#2563eb;
+      box-shadow:0 0 20px rgba(59,130,246,.35);
+    }
+
+    .note{
+      margin-top:12px;
+      color:#94a3b8;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      transform:translateX(-50%) translateY(20px);
+      min-width:260px;
+      max-width:calc(100% - 28px);
+      background:#1e293b;
+      border:1px solid rgba(255,255,255,.08);
+      color:#f8fafc;
+      padding:13px 16px;
+      border-radius:14px;
+      box-shadow:0 18px 45px rgba(0,0,0,.35);
+      opacity:0;
+      pointer-events:none;
+      transition:.25s;
+      z-index:20;
+      text-align:center;
+      font-size:14px;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    @keyframes pulse{
+      0%{opacity:.45}
+      50%{opacity:1}
+      100%{opacity:.45}
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @media(max-width:900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:520px){
+      body{padding:14px}
+      .brand h1{font-size:21px}
+      .nav{width:100%}
+      .nav a,.nav button{
+        flex:1;
+        text-align:center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Setting MVP v1.00</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <a href="dashboard.html">Trading Dashboard</a>
+    <a href="controlpanel.html">Control Panel</a>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <h3>Account Information</h3>
+
+      <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+      <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
+      <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
+      <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+
+      <div class="row">
+        <span>MT5 Signal</span>
+        <span class="signal">
+          <span class="dot" id="signalDot"></span>
+          <span id="mt5Signal">DISCONNECTED</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>MT5 Information</h3>
+
+      <div class="row"><span>Account Login</span><span id="accountLogin">-</span></div>
+      <div class="row"><span>Broker</span><span id="broker">-</span></div>
+      <div class="row"><span>Server</span><span id="server">-</span></div>
+      <div class="row"><span>Last Update</span><span id="lastUpdate">-</span></div>
+    </div>
+
+    <div class="card">
+      <h3>License Information</h3>
+
+      <div class="row"><span>Expiry Date</span><span id="expiryDate">-</span></div>
+      <div class="row"><span>Device Lock</span><span id="deviceLock">-</span></div>
+      <div class="row"><span>Last Login</span><span id="lastLogin">-</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Settings Information</h3>
+
+      <div class="row"><span>Theme</span><span id="theme">-</span></div>
+      <div class="row"><span>Telegram Enabled</span><span id="telegramEnabled">-</span></div>
+      <div class="row"><span>Allow Change Password</span><span id="allowPassword">-</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Change Password</h3>
+
+      <div class="password-box">
+        <input type="password" id="newPassword" placeholder="Enter new password">
+        <button class="save-btn" onclick="changePassword()">Save Password</button>
+      </div>
+
+      <div class="note">
+        Password akan update terus ke Firebase users/{clientId}/password.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast">Saved.</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    databaseURL: "https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const clientId = localStorage.getItem("clientId");
+
+  if(!clientId){
+    window.location.href = "index.html";
+  }
+
+  document.getElementById("clientIdView").innerText = clientId;
+
+  const userRef = ref(db, "TradeLink/users/" + clientId);
+  const profileRef = ref(db, "TradeLink/clients/" + clientId + "/profile");
+  const monitorRef = ref(db, "TradeLink/clients/" + clientId + "/monitor");
+  const licenseRef = ref(db, "TradeLink/clients/" + clientId + "/license");
+  const settingsRef = ref(db, "TradeLink/clients/" + clientId + "/settings");
+
+  function setText(id, value){
+    document.getElementById(id).innerText = value || "-";
+  }
+
+  function showToast(message){
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2200);
+  }
+
+  onValue(profileRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    setText("clientName", data.name);
+    setText("clientPackage", data.package);
+    setText("clientStatus", data.status);
+
+    const packageEl = document.getElementById("clientPackage");
+
+    if(data.package === "PRO"){
+      packageEl.className = "status-green";
+    }else{
+      packageEl.className = "status-blue";
+    }
+
+    const statusEl = document.getElementById("clientStatus");
+
+    if(data.status === "active"){
+      statusEl.className = "status-green";
+    }else{
+      statusEl.className = "status-red";
+    }
+  });
+
+  onValue(monitorRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    setText("accountLogin", data.account_login);
+    setText("broker", data.broker);
+    setText("server", data.server);
+    setText("lastUpdate", data.last_update);
+
+    const signal = data.mt5_signal || "DISCONNECTED";
+
+    setText("mt5Signal", signal);
+
+    const signalDot = document.getElementById("signalDot");
+
+    if(signal === "CONNECTED"){
+      signalDot.classList.add("connected");
+      document.getElementById("mt5Signal").className = "status-green";
+    }else{
+      signalDot.classList.remove("connected");
+      document.getElementById("mt5Signal").className = "status-red";
+    }
+  });
+
+  onValue(licenseRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    setText("expiryDate", data.expiryDate);
+    setText("lastLogin", data.lastLogin);
+
+    const lock = data.deviceLock === true ? "LOCKED" : "UNLOCKED";
+
+    setText("deviceLock", lock);
+
+    const lockEl = document.getElementById("deviceLock");
+
+    if(data.deviceLock){
+      lockEl.className = "status-red";
+    }else{
+      lockEl.className = "status-green";
+    }
+  });
+
+  onValue(settingsRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    setText("theme", data.theme);
+
+    const telegram = data.telegramEnabled ? "ENABLED" : "DISABLED";
+    const allowPassword = data.allowChangePassword ? "YES" : "NO";
+
+    setText("telegramEnabled", telegram);
+    setText("allowPassword", allowPassword);
+
+    document.getElementById("telegramEnabled").className =
+      data.telegramEnabled ? "status-green" : "status-red";
+
+    document.getElementById("allowPassword").className =
+      data.allowChangePassword ? "status-green" : "status-red";
+  });
+
+  window.changePassword = async function(){
+
+    const newPassword = document.getElementById("newPassword").value.trim();
+
+    if(newPassword.length < 4){
+      showToast("Password minimum 4 characters.");
+      return;
+    }
+
+    try{
+
+      await update(userRef,{
+        password:newPassword
+      });
+
+      document.getElementById("newPassword").value = "";
+
+      showToast("Password updated successfully.");
+
+    }catch(error){
+
+      console.error(error);
+      showToast("Failed to update password.");
+
+    }
+  };
+
+  window.logout = function(){
+    localStorage.clear();
+    window.location.href = "index.html";
+  };
+</script>
+
+</body>
+</html>
