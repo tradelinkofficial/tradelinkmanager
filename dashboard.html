@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),
+        linear-gradient(135deg,#0f172a,#111827);
+      color:#f8fafc;
+      padding:18px;
+    }
+
+    .container{max-width:1250px;margin:auto}
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .brand h1{
+      font-size:24px;
+      letter-spacing:1px;
+      text-shadow:0 0 18px rgba(59,130,246,.7);
+    }
+
+    .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .nav a,.nav button{
+      border:none;
+      text-decoration:none;
+      padding:11px 15px;
+      border-radius:12px;
+      color:#fff;
+      font-size:13px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.25s;
+    }
+
+    .blue{background:#3b82f6}
+    .blue:hover{background:#2563eb}
+    .orange{background:#f59e0b}
+    .red{background:#ef4444}
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .bottom-grid{
+      display:grid;
+      grid-template-columns:1.4fr .8fr;
+      gap:16px;
+    }
+
+    .card{
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 20px 50px rgba(0,0,0,.25);
+      backdrop-filter:blur(12px);
+      animation:fadeIn .5s ease;
+    }
+
+    .card h3{
+      color:#94a3b8;
+      font-size:13px;
+      margin-bottom:12px;
+      font-weight:normal;
+      letter-spacing:.3px;
+    }
+
+    .value{
+      font-size:26px;
+      font-weight:bold;
+    }
+
+    .small{
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .profit{color:#22c55e}
+    .loss{color:#ef4444}
+    .info{color:#06b6d4}
+    .warning{color:#f59e0b}
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      padding:11px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      gap:12px;
+    }
+
+    .row span:first-child{color:#94a3b8}
+    .row span:last-child{text-align:right;font-weight:bold}
+
+    .signal{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:#ef4444;
+      box-shadow:0 0 12px rgba(239,68,68,.9);
+      animation:pulse 1.5s infinite;
+    }
+
+    .dot.connected{
+      background:#22c55e;
+      box-shadow:0 0 12px rgba(34,197,94,.9);
+    }
+
+    .filter{
+      display:flex;
+      gap:8px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .filter button{
+      border:none;
+      padding:8px 12px;
+      border-radius:10px;
+      background:#111827;
+      color:#94a3b8;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .filter button.active{
+      background:#3b82f6;
+      color:#fff;
+    }
+
+    .activity{
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .activity strong{
+      display:block;
+      font-size:14px;
+      margin-bottom:4px;
+    }
+
+    .activity span{
+      color:#94a3b8;
+      font-size:13px;
+    }
+
+    canvas{width:100%!important;max-height:330px}
+
+    @keyframes pulse{
+      0%{opacity:.45}
+      50%{opacity:1}
+      100%{opacity:.45}
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @media(max-width:950px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .main-grid,.bottom-grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:520px){
+      body{padding:14px}
+      .grid{grid-template-columns:1fr}
+      .brand h1{font-size:21px}
+      .value{font-size:24px}
+      .nav{width:100%}
+      .nav a,.nav button{flex:1;text-align:center}
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Dashboard MVP v1.00</p>
+    </div>
+
+    <div class="nav">
+      <a class="blue" href="controlpanel.html">Control Panel</a>
+      <a class="orange" href="setting.html">Setting</a>
+      <button class="red" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Balance</h3>
+      <div class="value" id="balance">0.00</div>
+      <div class="small">Account balance</div>
+    </div>
+
+    <div class="card">
+      <h3>Equity</h3>
+      <div class="value info" id="equity">0.00</div>
+      <div class="small">Live equity</div>
+    </div>
+
+    <div class="card">
+      <h3>Floating P/L</h3>
+      <div class="value" id="floating">0.00</div>
+      <div class="small">Open trade profit/loss</div>
+    </div>
+
+    <div class="card">
+      <h3>MT5 Signal</h3>
+      <div class="value signal">
+        <span class="dot" id="signalDot"></span>
+        <span id="mt5Signal">DISCONNECTED</span>
+      </div>
+      <div class="small" id="lastUpdate">Last update: -</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="card">
+      <h3>Account Information</h3>
+
+      <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+      <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
+      <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
+      <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+      <div class="row"><span>Account Login</span><span id="accountLogin">0</span></div>
+      <div class="row"><span>Account Name</span><span id="accountName">-</span></div>
+      <div class="row"><span>Broker</span><span id="broker">-</span></div>
+      <div class="row"><span>Server</span><span id="server">-</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Trading Statistics</h3>
+
+      <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
+      <div class="row"><span>Sell Count</span><span class="loss" id="sellCount">0</span></div>
+      <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
+      <div class="row"><span>Margin</span><span id="margin">0.00</span></div>
+      <div class="row"><span>Profit Today</span><span id="profitToday">0.00</span></div>
+      <div class="row"><span>Drawdown</span><span id="drawdown">0.00</span></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-grid">
+
+    <div class="card">
+      <h3>Trading Analytics</h3>
+
+      <div class="filter">
+        <button class="active" onclick="changeAnalytics('daily', this)">Daily</button>
+        <button onclick="changeAnalytics('weekly', this)">Weekly</button>
+        <button onclick="changeAnalytics('monthly', this)">Monthly</button>
+      </div>
+
+      <canvas id="historyChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Recent Activity</h3>
+
+      <div class="activity">
+        <strong id="activitySignal">DISCONNECTED</strong>
+        <span>Current MT5 connection status</span>
+      </div>
+
+      <div class="activity">
+        <strong id="activityUpdate">-</strong>
+        <span>Last Firebase update</span>
+      </div>
+
+      <div class="activity">
+        <strong id="activityClient">-</strong>
+        <span>Active login client</span>
+      </div>
+
+      <div class="activity">
+        <strong id="activityPackage">-</strong>
+        <span>Current account package</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    databaseURL: "https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const clientId = localStorage.getItem("clientId");
+
+  if(!clientId){
+    window.location.href = "index.html";
+  }
+
+  document.getElementById("clientIdView").innerText = clientId;
+  document.getElementById("activityClient").innerText = clientId;
+
+  const profileRef = ref(db, "TradeLink/clients/" + clientId + "/profile");
+  const monitorRef = ref(db, "TradeLink/clients/" + clientId + "/monitor");
+  const historyRef = ref(db, "TradeLink/clients/" + clientId + "/history");
+
+  let rawHistory = {};
+  let analyticsMode = "daily";
+
+  function num(value){
+    return Number(value || 0);
+  }
+
+  function money(value){
+    return num(value).toFixed(2);
+  }
+
+  function setText(id,value){
+    document.getElementById(id).innerText = value ?? "-";
+  }
+
+  onValue(profileRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    setText("clientName", data.name || "-");
+    setText("clientPackage", data.package || "-");
+    setText("clientStatus", data.status || "-");
+
+    setText("activityPackage", data.package || "-");
+  });
+
+  onValue(monitorRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    const floating = num(data.floating_pl || data.floating);
+    const signal = data.mt5_signal || "DISCONNECTED";
+
+    setText("balance", money(data.balance));
+    setText("equity", money(data.equity));
+    setText("margin", money(data.margin));
+
+    const floatingEl = document.getElementById("floating");
+    floatingEl.innerText = money(floating);
+    floatingEl.className = "value " + (floating >= 0 ? "profit" : "loss");
+
+    setText("mt5Signal", signal);
+    setText("activitySignal", signal);
+
+    const signalDot = document.getElementById("signalDot");
+    if(signal === "CONNECTED"){
+      signalDot.classList.add("connected");
+      document.getElementById("activitySignal").className = "profit";
+    }else{
+      signalDot.classList.remove("connected");
+      document.getElementById("activitySignal").className = "loss";
+    }
+
+    const lastUpdate = data.last_update || "-";
+    setText("lastUpdate", "Last update: " + lastUpdate);
+    setText("activityUpdate", lastUpdate);
+
+    setText("accountLogin", data.account_login || 0);
+    setText("accountName", data.account_name || "-");
+    setText("broker", data.broker || "-");
+    setText("server", data.server || "-");
+
+    const buy = num(data.buy_count);
+    const sell = num(data.sell_count);
+    const total = data.total_trades !== undefined ? num(data.total_trades) : buy + sell;
+
+    setText("buyCount", buy);
+    setText("sellCount", sell);
+    setText("totalTrades", total);
+  });
+
+  const ctx = document.getElementById("historyChart");
+
+  const historyChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {label:"Balance",data:[],borderWidth:2,tension:.35},
+        {label:"Equity",data:[],borderWidth:2,tension:.35},
+        {label:"Floating P/L",data:[],borderWidth:2,tension:.35}
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{
+        legend:{labels:{color:"#f8fafc"}}
+      },
+      scales:{
+        x:{
+          ticks:{color:"#94a3b8"},
+          grid:{color:"rgba(255,255,255,.06)"}
+        },
+        y:{
+          ticks:{color:"#94a3b8"},
+          grid:{color:"rgba(255,255,255,.06)"}
+        }
+      }
+    }
+  });
+
+  onValue(historyRef, (snapshot) => {
+    rawHistory = snapshot.val() || {};
+    renderHistory();
+
+    const keys = Object.keys(rawHistory).sort();
+    const latestKey = keys[keys.length - 1];
+
+    if(latestKey && rawHistory[latestKey]){
+      const latest = rawHistory[latestKey];
+
+      setText("profitToday", money(latest.profit_today));
+      setText("drawdown", money(latest.drawdown));
+
+      if(latest.total_trades !== undefined){
+        setText("totalTrades", num(latest.total_trades));
+      }
+    }
+  });
+
+  function renderHistory(){
+    const labels = [];
+    const balanceData = [];
+    const equityData = [];
+    const floatingData = [];
+
+    const grouped = {};
+
+    Object.keys(rawHistory).sort().forEach(date => {
+      const item = rawHistory[date] || {};
+      let key = date;
+
+      if(analyticsMode === "weekly"){
+        key = getWeekKey(date);
+      }
+
+      if(analyticsMode === "monthly"){
+        key = date.substring(0,7);
+      }
+
+      grouped[key] = {
+        balance: num(item.balance),
+        equity: num(item.equity),
+        floating_pl: num(item.floating_pl || item.floating)
+      };
+    });
+
+    Object.keys(grouped).sort().forEach(key => {
+      labels.push(key);
+      balanceData.push(grouped[key].balance);
+      equityData.push(grouped[key].equity);
+      floatingData.push(grouped[key].floating_pl);
+    });
+
+    historyChart.data.labels = labels;
+    historyChart.data.datasets[0].data = balanceData;
+    historyChart.data.datasets[1].data = equityData;
+    historyChart.data.datasets[2].data = floatingData;
+    historyChart.update();
+  }
+
+  function getWeekKey(dateStr){
+    const d = new Date(dateStr);
+    if(isNaN(d)) return dateStr;
+
+    const firstDay = new Date(d.getFullYear(),0,1);
+    const pastDays = Math.floor((d - firstDay) / 86400000);
+    const week = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+
+    return d.getFullYear() + "-W" + String(week).padStart(2,"0");
+  }
+
+  window.changeAnalytics = function(mode, btn){
+    analyticsMode = mode;
+
+    document.querySelectorAll(".filter button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    renderHistory();
+  };
+
+  window.logout = function(){
+    localStorage.clear();
+    window.location.href = "index.html";
+  };
+</script>
+
+</body>
+</html>
