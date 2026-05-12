@@ -43,12 +43,18 @@
     .activity{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .activity strong{display:block;font-size:14px;margin-bottom:4px}
     .activity span{color:#94a3b8;font-size:13px}
-    .chart-status{margin-top:10px;color:#94a3b8;font-size:12px;text-align:center}
+    .analytics-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .analytics-head h3{margin-bottom:4px}
+    .analytics-sub{color:#94a3b8;font-size:12px}
+    .analytics-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .metric-box{background:rgba(17,24,39,.72);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px}
+    .metric-box span{display:block;color:#94a3b8;font-size:11px;margin-bottom:6px}
+    .metric-box strong{font-size:17px;letter-spacing:.2px}
     canvas{width:100%!important;max-height:330px;min-height:260px}
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}}
-    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value,.balance-value{font-size:24px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row{font-size:14px}.card-title-row{align-items:flex-start}.mini-signal{width:100%;justify-content:center}}
+    @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.analytics-metrics{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value,.balance-value{font-size:24px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row{font-size:14px}.card-title-row{align-items:flex-start}.mini-signal{width:100%;justify-content:center}.analytics-metrics{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -102,20 +108,31 @@
       <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
       <div class="row"><span>Sell Count</span><span class="loss" id="sellCount">0</span></div>
       <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
-      <div class="row"><span>Margin</span><span id="margin">0.00</span></div>
     </div>
   </div>
 
   <div class="bottom-grid">
     <div class="card">
-      <h3>Trading Analytics</h3>
-      <div class="filter">
-        <button class="active" onclick="changeAnalytics('daily', this)">Daily</button>
-        <button onclick="changeAnalytics('weekly', this)">Weekly</button>
-        <button onclick="changeAnalytics('monthly', this)">Monthly</button>
+      <div class="analytics-head">
+        <div>
+          <h3>Trading Analytics</h3>
+          <div class="analytics-sub">Performance shown in percentage (%)</div>
+        </div>
+        <div class="filter">
+          <button class="active" onclick="changeAnalytics('daily', this)">Daily</button>
+          <button onclick="changeAnalytics('weekly', this)">Weekly</button>
+          <button onclick="changeAnalytics('monthly', this)">Monthly</button>
+        </div>
       </div>
+
+      <div class="analytics-metrics">
+        <div class="metric-box"><span>Balance Growth</span><strong id="balanceGrowthPct">0.00%</strong></div>
+        <div class="metric-box"><span>Floating P/L</span><strong id="floatingPct">0.00%</strong></div>
+        <div class="metric-box"><span>Profit Today</span><strong id="profitTodayPct">0.00%</strong></div>
+        <div class="metric-box"><span>Drawdown</span><strong id="drawdownPct">0.00%</strong></div>
+      </div>
+
       <canvas id="historyChart"></canvas>
-      <div class="chart-status" id="chartStatus">Loading history data...</div>
     </div>
 
     <div class="card">
@@ -169,8 +186,30 @@
     return num(value).toFixed(2);
   }
 
+  function pct(value){
+    return num(value).toFixed(2) + "%";
+  }
+
+  function pctClass(value, invert=false){
+    const n = num(value);
+    if(invert){
+      return n > 0 ? "loss" : "profit";
+    }
+    return n >= 0 ? "profit" : "loss";
+  }
+
+  function setMetric(id,value,invert=false){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerText = pct(value);
+    el.className = pctClass(value,invert);
+  }
+
   function setText(id,value){
-    document.getElementById(id).innerText = value ?? "-";
+    const el = document.getElementById(id);
+    if(el){
+      el.innerText = value ?? "-";
+    }
   }
 
   function getCurrencySymbol(data){
@@ -256,8 +295,6 @@
     const signal = data.mt5_signal || "DISCONNECTED";
     const activeSymbols = data.active_symbols || "-";
 
-    setText("margin",formatMoneyWithSymbol(data.margin));
-
     const floatingEl = document.getElementById("floating");
     floatingEl.innerText = formatMoneyWithSymbol(floating);
     floatingEl.className = "value " + (floating >= 0 ? "profit" : "loss");
@@ -303,15 +340,22 @@
     data:{
       labels:[],
       datasets:[
-        {label:"Balance",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
-        {label:"Floating P/L",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6}
+        {label:"Balance Growth %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Floating P/L %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Drawdown %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6}
       ]
     },
     options:{
       responsive:true,
+      interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{
-          labels:{color:"#f8fafc"}
+        legend:{labels:{color:"#f8fafc"}},
+        tooltip:{
+          callbacks:{
+            label:function(context){
+              return context.dataset.label + ": " + num(context.parsed.y).toFixed(2) + "%";
+            }
+          }
         }
       },
       scales:{
@@ -320,7 +364,10 @@
           grid:{color:"rgba(255,255,255,.06)"}
         },
         y:{
-          ticks:{color:"#94a3b8"},
+          ticks:{
+            color:"#94a3b8",
+            callback:function(value){return value + "%";}
+          },
           grid:{color:"rgba(255,255,255,.06)"}
         }
       }
@@ -341,8 +388,9 @@
 
   function renderHistory(){
     const labels = [];
-    const balanceData = [];
-    const floatingData = [];
+    const balanceGrowthData = [];
+    const floatingPctData = [];
+    const drawdownPctData = [];
     const grouped = {};
     const historyKeys = Object.keys(rawHistory).sort();
 
@@ -360,32 +408,65 @@
 
       grouped[key] = {
         balance:num(item.balance),
-        floating_pl:num(item.floating_pl || item.floating)
+        floating_pl:num(item.floating_pl || item.floating),
+        profit_today:num(item.profit_today),
+        drawdown:num(item.drawdown),
+        drawdown_pct:item.drawdown_pct !== undefined ? num(item.drawdown_pct) : null
       };
     });
 
-    Object.keys(grouped).sort().forEach(key=>{
+    const orderedKeys = Object.keys(grouped).sort();
+    const firstKey = orderedKeys[0];
+    const firstBalance = firstKey ? num(grouped[firstKey].balance) : 0;
+
+    orderedKeys.forEach(key=>{
+      const item = grouped[key];
+      const balance = num(item.balance);
+      const floating = num(item.floating_pl);
+      const profitToday = num(item.profit_today);
+
+      const balanceGrowth = firstBalance > 0 ? ((balance - firstBalance) / firstBalance) * 100 : 0;
+      const floatingPercent = balance > 0 ? (floating / balance) * 100 : 0;
+      const profitTodayPercent = balance > 0 ? (profitToday / balance) * 100 : 0;
+
+      let drawdownPercent = 0;
+      if(item.drawdown_pct !== null){
+        drawdownPercent = num(item.drawdown_pct);
+      }else if(balance > 0){
+        const rawDrawdown = Math.abs(num(item.drawdown));
+        drawdownPercent = rawDrawdown <= 100 ? rawDrawdown : (rawDrawdown / balance) * 100;
+      }
+
       labels.push(key);
-      balanceData.push(grouped[key].balance);
-      floatingData.push(grouped[key].floating_pl);
+      balanceGrowthData.push(Number(balanceGrowth.toFixed(2)));
+      floatingPctData.push(Number(floatingPercent.toFixed(2)));
+      drawdownPctData.push(Number(drawdownPercent.toFixed(2)));
+
+      setMetric("balanceGrowthPct",balanceGrowth);
+      setMetric("floatingPct",floatingPercent);
+      setMetric("profitTodayPct",profitTodayPercent);
+      setMetric("drawdownPct",drawdownPercent,true);
     });
 
     if(labels.length === 0 && lastMonitorPoint){
+      const liveBalance = num(lastMonitorPoint.balance);
+      const liveFloatingPct = liveBalance > 0 ? (num(lastMonitorPoint.floating_pl) / liveBalance) * 100 : 0;
+
       labels.push(lastMonitorPoint.label);
-      balanceData.push(lastMonitorPoint.balance);
-      floatingData.push(lastMonitorPoint.floating_pl);
-      setText("chartStatus","Live monitor fallback. History data belum tersedia.");
-    }else if(labels.length === 0){
-      setText("chartStatus","Tiada data history. EA perlu update TradeLink/clients/{clientId}/history.");
-    }else if(labels.length === 1){
-      setText("chartStatus","History aktif. Hanya 1 data point, line akan lebih jelas selepas data bertambah.");
-    }else{
-      setText("chartStatus","History chart updated: " + labels.length + " data points.");
+      balanceGrowthData.push(0);
+      floatingPctData.push(Number(liveFloatingPct.toFixed(2)));
+      drawdownPctData.push(0);
+
+      setMetric("balanceGrowthPct",0);
+      setMetric("floatingPct",liveFloatingPct);
+      setMetric("profitTodayPct",0);
+      setMetric("drawdownPct",0,true);
     }
 
     historyChart.data.labels = labels;
-    historyChart.data.datasets[0].data = balanceData;
-    historyChart.data.datasets[1].data = floatingData;
+    historyChart.data.datasets[0].data = balanceGrowthData;
+    historyChart.data.datasets[1].data = floatingPctData;
+    historyChart.data.datasets[2].data = drawdownPctData;
     historyChart.update();
   }
 
