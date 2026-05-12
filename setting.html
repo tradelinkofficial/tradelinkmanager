@@ -116,7 +116,6 @@
       </div>
 
       <div class="field"><label>Telegram Chat ID</label><input type="text" id="telegramChatId" placeholder="Telegram Chat ID"></div>
-      <div class="field"><label>Telegram Bot Token</label><input type="password" id="telegramBotToken" placeholder="Telegram Bot Token"></div>
       <button class="save-btn" id="telegramBtn" onclick="saveTelegramSettings()">Save Telegram Settings</button>
       <div class="lock-note" id="telegramLockNote">Telegram settings are available for PRO package only.</div>
     </div>
@@ -162,7 +161,6 @@
 
     document.getElementById("telegramToggle").disabled = !isPro;
     document.getElementById("telegramChatId").disabled = !isPro;
-    document.getElementById("telegramBotToken").disabled = !isPro;
     document.getElementById("telegramBtn").disabled = !isPro;
 
     document.getElementById("telegramBadge").style.display = isPro ? "none" : "inline-flex";
@@ -229,7 +227,6 @@
     document.getElementById("telegramEnabled").className = telegramEnabled ? "status-green" : "status-red";
     document.getElementById("telegramToggle").checked = telegramEnabled;
     document.getElementById("telegramChatId").value = data.telegramChatId || "";
-    document.getElementById("telegramBotToken").value = data.telegramBotToken || "";
 
     updatePasswordUI();
     updateTelegramUI();
@@ -270,13 +267,11 @@
 
     const telegramToggle = document.getElementById("telegramToggle").checked;
     const telegramChatId = document.getElementById("telegramChatId").value.trim();
-    const telegramBotToken = document.getElementById("telegramBotToken").value.trim();
 
     try{
       await update(settingsRef,{
         telegramEnabled:telegramToggle,
-        telegramChatId:telegramChatId,
-        telegramBotToken:telegramBotToken
+        telegramChatId:telegramChatId
       });
       showToast("Telegram settings saved.");
     }catch(error){
