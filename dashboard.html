@@ -43,7 +43,8 @@
     .activity{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .activity strong{display:block;font-size:14px;margin-bottom:4px}
     .activity span{color:#94a3b8;font-size:13px}
-    canvas{width:100%!important;max-height:330px}
+    .chart-status{margin-top:10px;color:#94a3b8;font-size:12px;text-align:center}
+    canvas{width:100%!important;max-height:330px;min-height:260px}
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}}
@@ -114,6 +115,7 @@
         <button onclick="changeAnalytics('monthly', this)">Monthly</button>
       </div>
       <canvas id="historyChart"></canvas>
+      <div class="chart-status" id="chartStatus">Loading history data...</div>
     </div>
 
     <div class="card">
@@ -154,6 +156,7 @@
   let balanceValue = 0;
   let balanceVisible = false;
   let currencySymbol = "";
+  let lastMonitorPoint = null;
 
   const eyeOpenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
   const eyeClosedIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"></path><path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"></path><path d="M1 1l22 22"></path></svg>`;
@@ -283,6 +286,16 @@
     setText("buyCount",buy);
     setText("sellCount",sell);
     setText("totalTrades",total);
+
+    lastMonitorPoint = {
+      balance: balanceValue,
+      floating_pl: floating,
+      label: lastUpdate !== "-" ? lastUpdate : "Live"
+    };
+
+    if(Object.keys(rawHistory).length === 0){
+      renderHistory();
+    }
   });
 
   const historyChart = new Chart(document.getElementById("historyChart"),{
@@ -290,8 +303,8 @@
     data:{
       labels:[],
       datasets:[
-        {label:"Balance",data:[],borderWidth:2,tension:.35},
-        {label:"Floating P/L",data:[],borderWidth:2,tension:.35}
+        {label:"Balance",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Floating P/L",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6}
       ]
     },
     options:{
@@ -331,8 +344,9 @@
     const balanceData = [];
     const floatingData = [];
     const grouped = {};
+    const historyKeys = Object.keys(rawHistory).sort();
 
-    Object.keys(rawHistory).sort().forEach(date=>{
+    historyKeys.forEach(date=>{
       const item = rawHistory[date] || {};
       let key = date;
 
@@ -355,6 +369,19 @@
       balanceData.push(grouped[key].balance);
       floatingData.push(grouped[key].floating_pl);
     });
+
+    if(labels.length === 0 && lastMonitorPoint){
+      labels.push(lastMonitorPoint.label);
+      balanceData.push(lastMonitorPoint.balance);
+      floatingData.push(lastMonitorPoint.floating_pl);
+      setText("chartStatus","Live monitor fallback. History data belum tersedia.");
+    }else if(labels.length === 0){
+      setText("chartStatus","Tiada data history. EA perlu update TradeLink/clients/{clientId}/history.");
+    }else if(labels.length === 1){
+      setText("chartStatus","History aktif. Hanya 1 data point, line akan lebih jelas selepas data bertambah.");
+    }else{
+      setText("chartStatus","History chart updated: " + labels.length + " data points.");
+    }
 
     historyChart.data.labels = labels;
     historyChart.data.datasets[0].data = balanceData;
