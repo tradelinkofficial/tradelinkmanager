@@ -18,9 +18,16 @@
     .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
     .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
     .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
-    .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
     .bottom-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}
     .value{font-size:26px;font-weight:bold}
+    .balance-value{font-size:30px;font-weight:bold;color:#f8fafc;letter-spacing:.3px}
+    .balance-card-row{align-items:flex-start}
+    .balance-card-row .balance-row{justify-content:flex-end;align-items:center}
+    .signal-mini{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .signal-mini span:first-child{color:#94a3b8}
+    .signal-mini .signal{font-size:14px;font-weight:bold;color:#f8fafc}
+    .symbol-badge{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#93c5fd;font-size:12px;font-weight:bold;margin-left:8px;vertical-align:middle}
     .small{color:#94a3b8;font-size:12px;margin-top:6px}
     .profit{color:#22c55e}.loss{color:#ef4444}.info{color:#06b6d4}.warning{color:#f59e0b}
     .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}
@@ -43,7 +50,7 @@
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}}
-    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value{font-size:24px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row{font-size:14px}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value{font-size:24px}.balance-value{font-size:26px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row,.signal-mini{font-size:14px}}
   </style>
 </head>
 <body>
@@ -56,21 +63,24 @@
   </div>
   <div class="card">
     <h3>Account Information</h3>
+    <div class="signal-mini">
+      <span>MT5 Signal</span>
+      <span class="signal"><span class="dot" id="signalDot"></span><span id="mt5Signal">DISCONNECTED</span></span>
+    </div>
     <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
     <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
     <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
     <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
-    <div class="row">
+    <div class="row balance-card-row">
       <span>Balance</span>
       <span class="balance-row">
-        <span id="balance">*****</span>
+        <span class="balance-value" id="balance">*****</span>
         <button class="eye-btn" onclick="toggleBalance()" id="eyeBtn" title="Show / Hide Balance"></button>
       </span>
     </div>
   </div>
   <div class="quick-grid">
-    <div class="card"><h3>Floating P/L</h3><div class="value" id="floating">0.00</div><div class="small">Open trade profit/loss</div></div>
-    <div class="card"><h3>MT5 Signal</h3><div class="value signal"><span class="dot" id="signalDot"></span><span id="mt5Signal">DISCONNECTED</span></div><div class="small" id="lastUpdate">Last update: -</div></div>
+    <div class="card"><h3>Floating P/L <span class="symbol-badge" id="activeSymbols">-</span></h3><div class="value" id="floating">0.00</div><div class="small" id="lastUpdate">Last update: -</div></div>
     <div class="card">
       <h3>Trading Statistics</h3>
       <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
@@ -120,13 +130,31 @@
   let analyticsMode = "daily";
   let balanceValue = 0;
   let balanceVisible = false;
+  let accountCurrency = "USD";
+  let currencySymbol = "USD";
 
   const eyeOpenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
   const eyeClosedIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"></path><path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"></path><path d="M1 1l22 22"></path></svg>`;
 
   function num(value){return Number(value || 0);}
-  function money(value){return num(value).toFixed(2);}
+  function getCurrencySymbol(data){
+    let currency = String(data.account_currency || data.currency || data.accountCurrency || accountCurrency || "USD").toUpperCase();
+    const accountType = String(data.account_type || data.accountType || data.account_mode || "").toUpperCase();
+    if((accountType.includes("CENT") || data.is_cent === true || data.cent_account === true) && currency === "USD"){
+      currency = "USDC";
+    }
+    accountCurrency = currency;
+    const map = {USD:"USD",USDC:"USDC",MYR:"MYR",EUR:"EUR",GBP:"GBP",JPY:"JPY",AUD:"AUD",CAD:"CAD",CHF:"CHF",NZD:"NZD",SGD:"SGD"};
+    return map[currency] || currency;
+  }
+  function money(value){return currencySymbol + " " + num(value).toFixed(2);}
   function setText(id,value){document.getElementById(id).innerText = value ?? "-";}
+  function getActiveSymbols(data){
+    const raw = data.active_symbols || data.position_symbols || data.symbols || data.active_symbol || data.symbol || "";
+    if(Array.isArray(raw)) return raw.filter(Boolean).join(" / ") || "-";
+    if(typeof raw === "object" && raw !== null) return Object.values(raw).filter(Boolean).join(" / ") || "-";
+    return String(raw || "-");
+  }
 
   function renderBalance(){
     document.getElementById("balance").innerText = balanceVisible ? money(balanceValue) : "*****";
@@ -156,11 +184,13 @@
 
   onValue(monitorRef,(snapshot)=>{
     const data = snapshot.val() || {};
+    currencySymbol = getCurrencySymbol(data);
     balanceValue = num(data.balance);
     renderBalance();
 
     const floating = num(data.floating_pl || data.floating);
     const signal = data.mt5_signal || "DISCONNECTED";
+    setText("activeSymbols",getActiveSymbols(data));
 
     setText("margin",money(data.margin));
 
