@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Admin Panel</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,#0f172a,#111827);color:#f8fafc;padding:18px}
+    .container{max-width:1350px;margin:auto}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
+    .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
+    .admin-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);color:#fcd34d;font-size:12px;font-weight:900;letter-spacing:.35px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:#f8fafc;font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .nav a:hover,.nav button:hover{background:#1e293b;transform:translateY(-1px);box-shadow:0 0 18px rgba(59,130,246,.28)}
+    .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
+    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
+    .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
+    .card-title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .card-title-row h3{margin-bottom:0}
+    .admin-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .mini{background:#111827;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px}
+    .mini span{display:block;color:#94a3b8;font-size:11px;margin-bottom:6px}
+    .mini strong{font-size:15px;color:#f8fafc;word-break:break-word}
+    .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+    .summary-card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease}
+    .summary-card span{display:block;color:#94a3b8;font-size:12px;margin-bottom:10px}
+    .summary-card strong{font-size:28px;color:#f8fafc}
+    .status-green{color:#22c55e!important}.status-red{color:#ef4444!important}.status-blue{color:#3b82f6!important}.status-orange{color:#f59e0b!important}.status-grey{color:#9ca3af!important}.status-cyan{color:#06b6d4!important}
+    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:72px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.25px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1;white-space:nowrap}
+    .badge-green{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.35);color:#86efac}
+    .badge-red{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.35);color:#fca5a5}
+    .badge-blue{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.35);color:#93c5fd}
+    .badge-cyan{background:rgba(6,182,212,.14);border-color:rgba(6,182,212,.35);color:#67e8f9}
+    .badge-orange{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fcd34d}
+    .badge-grey{background:rgba(156,163,175,.14);border-color:rgba(156,163,175,.35);color:#d1d5db}
+
+    .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px}
+    .form-field{display:flex;flex-direction:column;gap:7px}
+    .form-field label{color:#94a3b8;font-size:12px;font-weight:bold;letter-spacing:.2px}
+    input,select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:#f8fafc;font-size:14px;outline:none;transition:.25s}
+    input:focus,select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+    input::placeholder{color:#64748b}
+    .form-actions{display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:14px;flex-wrap:wrap}
+    .primary-btn{border:none;border-radius:14px;padding:13px 16px;background:#3b82f6;color:#fff;font-weight:900;cursor:pointer;transition:.25s;min-width:150px}
+    .primary-btn:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 0 20px rgba(59,130,246,.32)}
+    .primary-btn:disabled{background:#334155;color:#94a3b8;cursor:not-allowed;transform:none;box-shadow:none}
+    .secondary-btn{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 16px;background:#111827;color:#f8fafc;font-weight:900;cursor:pointer;transition:.25s;min-width:120px}
+    .secondary-btn:hover{background:#1e293b;transform:translateY(-1px)}
+    .form-note{margin-top:12px;padding:12px;border-radius:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#cbd5e1;font-size:12px;line-height:1.5}
+    .table-wrap{width:100%;overflow-x:auto;border:1px solid rgba(255,255,255,.06);border-radius:18px;background:rgba(17,24,39,.42)}
+    table{width:100%;border-collapse:collapse;min-width:1120px}
+    th,td{padding:13px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;vertical-align:middle}
+    th{color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.35px;background:rgba(15,23,42,.72);position:sticky;top:0;z-index:1}
+    td{color:#f8fafc}
+    tr:hover td{background:rgba(59,130,246,.06)}
+    .client-id{font-weight:900;color:#f8fafc;letter-spacing:.2px}
+    .muted{color:#94a3b8!important}
+    .money{font-weight:900;white-space:nowrap}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .small-btn{border:none;border-radius:10px;padding:8px 10px;color:#f8fafc;background:#111827;border:1px solid rgba(255,255,255,.08);font-weight:bold;font-size:12px;cursor:pointer;transition:.25s}
+    .small-btn:hover{background:#1e293b;transform:translateY(-1px)}
+
+    .modal{position:fixed;inset:0;background:rgba(2,6,23,.76);display:none;align-items:center;justify-content:center;padding:18px;z-index:70}
+    .modal-box{width:100%;max-width:760px;max-height:92vh;overflow:auto;background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:20px;box-shadow:0 25px 90px rgba(0,0,0,.58);animation:fadeIn .25s ease}
+    .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+    .modal-head h2{font-size:20px;color:#f8fafc;margin-bottom:5px}.modal-head p{font-size:13px;color:#94a3b8}
+    .modal-close{border:none;background:#111827;color:#f8fafc;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 11px;cursor:pointer;font-weight:900}
+    .readonly-box{background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 14px;color:#94a3b8;font-weight:900}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .empty{padding:26px;text-align:center;color:#94a3b8;line-height:1.5}
+    .loading{position:fixed;inset:0;background:rgba(2,6,23,.88);display:flex;align-items:center;justify-content:center;z-index:50;color:#f8fafc;text-align:center;padding:20px}
+    .loading-box{background:rgba(30,41,59,.86);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.5);max-width:380px;width:100%}
+    .loading-box h2{font-size:20px;margin-bottom:8px}.loading-box p{color:#94a3b8;font-size:13px}
+    .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(148,163,184,.3);border-top-color:#3b82f6;margin:0 auto 16px;animation:spin .8s linear infinite}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);min-width:260px;max-width:calc(100% - 28px);background:#1e293b;border:1px solid rgba(255,255,255,.08);color:#f8fafc;padding:13px 16px;border-radius:14px;box-shadow:0 18px 45px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center;font-size:14px}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.summary-grid,.admin-row,.form-grid{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.card-title-row{align-items:flex-start}}
+  </style>
+</head>
+
+<body>
+<div class="loading" id="loadingScreen">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <h2>Validating Admin Access</h2>
+    <p>Please wait while TradeLink Manager checks your admin session.</p>
+  </div>
+</div>
+
+<div class="container" id="adminApp" style="display:none;">
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Admin Panel MVP v1.00</p>
+    </div>
+    <div class="admin-chip"><span class="dot"></span> ADMIN PANEL</div>
+  </div>
+
+  <div class="nav">
+    <a href="admin.html">Admin Home</a>
+    <button class="logoutBtn" onclick="logoutAdmin()">Logout</button>
+  </div>
+
+  <div class="card">
+    <h3>Admin Access</h3>
+    <div class="admin-row">
+      <div class="mini"><span>Admin ID</span><strong id="adminIdView">-</strong></div>
+      <div class="mini"><span>Name</span><strong id="adminName">-</strong></div>
+      <div class="mini"><span>Role</span><strong id="adminRoleView" class="status-orange">-</strong></div>
+      <div class="mini"><span>Status</span><strong id="adminStatus" class="status-green">-</strong></div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card"><span>Total Clients</span><strong id="totalClients">0</strong></div>
+    <div class="summary-card"><span>Active Clients</span><strong id="activeClients" class="status-green">0</strong></div>
+    <div class="summary-card"><span>PRO Clients</span><strong id="proClients" class="status-blue">0</strong></div>
+    <div class="summary-card"><span>Demo Accounts</span><strong id="demoAccounts" class="status-orange">0</strong></div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-title-row">
+      <h3>Add New Client</h3>
+      <span class="badge badge-orange">ADMIN CREATE</span>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Client ID</label>
+        <input type="text" id="newClientId" placeholder="Example: TL0002" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Client Name</label>
+        <input type="text" id="newClientName" placeholder="Client name" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Default Password</label>
+        <input type="text" id="newClientPassword" placeholder="Example: 123456" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Package</label>
+        <select id="newClientPackage">
+          <option value="BASIC">BASIC</option>
+          <option value="PRO">PRO</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="newClientStatus">
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Demo Account</label>
+        <select id="newClientDemo">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>License Expiry Date</label>
+        <input type="date" id="newClientExpiry" />
+      </div>
+      <div class="form-field">
+        <label>Device Lock</label>
+        <select id="newClientDeviceLock">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-note">
+      Create client akan tulis node default ke users, profile, monitor, command, license, dan settings. Existing Client ID tidak akan dioverwrite.
+    </div>
+
+    <div class="form-actions">
+      <button class="secondary-btn" onclick="clearCreateClientForm()">Clear Form</button>
+      <button class="primary-btn" id="createClientBtn" onclick="createNewClient()">Create Client</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title-row">
+      <h3>Client Management</h3>
+      <span class="badge badge-blue" id="clientListStatus">REALTIME</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Client ID</th>
+            <th>Name</th>
+            <th>Package</th>
+            <th>Status</th>
+            <th>Mode</th>
+            <th>EA Status</th>
+            <th>Balance</th>
+            <th>Floating P/L</th>
+            <th>License Expiry</th>
+            <th>Last Update</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="clientTableBody">
+          <tr><td colspan="11" class="empty">Loading clients...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="editClientModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h2>Edit Client</h2>
+        <p>Update profile, license, demo status, and settings only.</p>
+      </div>
+      <button class="modal-close" onclick="closeEditClientModal()">✕</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Client ID</label>
+        <div class="readonly-box" id="editClientIdView">-</div>
+      </div>
+      <div class="form-field">
+        <label>Client Name</label>
+        <input type="text" id="editClientName" placeholder="Client name" />
+      </div>
+      <div class="form-field">
+        <label>Package</label>
+        <select id="editClientPackage">
+          <option value="BASIC">BASIC</option>
+          <option value="PRO">PRO</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="editClientStatus">
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Demo Account</label>
+        <select id="editClientDemo">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>License Expiry Date</label>
+        <input type="date" id="editClientExpiry" />
+      </div>
+      <div class="form-field">
+        <label>Device Lock</label>
+        <select id="editClientDeviceLock">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Allow Change Password</label>
+        <select id="editAllowChangePassword">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Telegram Enabled</label>
+        <select id="editTelegramEnabled">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Telegram Chat ID</label>
+        <input type="text" id="editTelegramChatId" placeholder="Telegram Chat ID" />
+      </div>
+    </div>
+
+    <div class="form-note">
+      Edit ini tidak akan overwrite monitor, command, history, password, atau sessionToken client.
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeEditClientModal()">Cancel</button>
+      <button class="primary-btn" id="saveEditClientBtn" onclick="saveEditClientChanges()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Admin session expired.</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = { databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const adminId = localStorage.getItem("adminId") || "";
+  const adminSessionToken = localStorage.getItem("adminSessionToken") || "";
+  let latestUsers = {};
+  let latestClients = {};
+  let editingClientId = "";
+
+  function clearAdminSession(){
+    localStorage.removeItem("adminId");
+    localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminSessionToken");
+  }
+
+  function redirectLogin(){
+    clearAdminSession();
+    window.location.href = "admin-login.html";
+  }
+
+  function showToast(message){
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2200);
+  }
+
+  function setText(id,value){
+    const el = document.getElementById(id);
+    if(el){ el.innerText = value ?? "-"; }
+  }
+
+  function num(value){ return Number(value || 0); }
+  function money(value){ return num(value).toFixed(2); }
+  function escapeHtml(value){
+    return String(value ?? "-").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[char]));
+  }
+
+  function badge(text,type){
+    return `<span class="badge badge-${type}">${escapeHtml(text)}</span>`;
+  }
+
+  function packageBadge(value){
+    const pkg = String(value || "BASIC").toUpperCase();
+    return pkg === "PRO" ? badge("PRO","green") : badge("BASIC","cyan");
+  }
+
+  function statusBadge(value){
+    const status = String(value || "inactive").toUpperCase();
+    return status === "ACTIVE" ? badge("ACTIVE","green") : badge(status,"red");
+  }
+
+  function modeBadge(isDemo){
+    return isDemo ? badge("DEMO","orange") : badge("REAL","blue");
+  }
+
+  function eaBadge(value){
+    const signal = String(value || "DISCONNECTED").toUpperCase();
+    if(signal === "CONNECTED") return badge("CONNECTED","green");
+    if(signal === "EA_PAUSE") return badge("EA PAUSE","grey");
+    return badge("DISCONNECTED","red");
+  }
+
+  function formatCurrency(amount, monitor){
+    const symbol = monitor.currency_symbol || (String(monitor.account_currency || "").toUpperCase() === "USD" ? "$" : "");
+    const value = money(amount);
+    if(symbol === "$") return "$" + value;
+    if(symbol === "RM") return "RM " + value;
+    if(symbol) return symbol + " " + value;
+    return value;
+  }
+
+  async function validateAdminAccess(){
+    if(!adminId || !adminSessionToken){
+      redirectLogin();
+      return;
+    }
+
+    try{
+      const adminRef = ref(db,"TradeLink/admins/" + adminId);
+      const snapshot = await get(adminRef);
+
+      if(!snapshot.exists()){
+        redirectLogin();
+        return;
+      }
+
+      const adminData = snapshot.val() || {};
+      const isValid =
+        adminData.role === "admin" &&
+        adminData.status === "active" &&
+        adminData.sessionToken === adminSessionToken;
+
+      if(!isValid){
+        redirectLogin();
+        return;
+      }
+
+      localStorage.setItem("adminRole",adminData.role || "admin");
+      renderAdmin(adminData);
+      enableAdminShell();
+      watchAdminSession();
+      watchRealtimeClients();
+
+    }catch(error){
+      console.error(error);
+      redirectLogin();
+    }
+  }
+
+  function renderAdmin(adminData){
+    setText("adminIdView",adminData.adminId || adminId);
+    setText("adminName",adminData.name || "Main Admin");
+    setText("adminRoleView",String(adminData.role || "admin").toUpperCase());
+    setText("adminStatus",String(adminData.status || "active").toUpperCase());
+  }
+
+  function enableAdminShell(){
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("adminApp").style.display = "block";
+  }
+
+  function watchAdminSession(){
+    onValue(ref(db,"TradeLink/admins/" + adminId),(snapshot)=>{
+      const data = snapshot.val() || {};
+      const currentToken = localStorage.getItem("adminSessionToken") || "";
+
+      if(!data || data.role !== "admin" || data.status !== "active" || data.sessionToken !== currentToken){
+        showToast("Admin session expired.");
+        setTimeout(redirectLogin,700);
+      }
+    });
+  }
+
+  function watchRealtimeClients(){
+    onValue(ref(db,"TradeLink/users"),(snapshot)=>{
+      latestUsers = snapshot.val() || {};
+      renderClientList();
+    });
+
+    onValue(ref(db,"TradeLink/clients"),(snapshot)=>{
+      latestClients = snapshot.val() || {};
+      renderClientList();
+    });
+  }
+
+  function renderClientList(){
+    const ids = Array.from(new Set([...Object.keys(latestClients), ...Object.keys(latestUsers)])).sort();
+    const tbody = document.getElementById("clientTableBody");
+
+    let active = 0;
+    let pro = 0;
+    let demo = 0;
+
+    if(ids.length === 0){
+      tbody.innerHTML = `<tr><td colspan="11" class="empty">No client data found.</td></tr>`;
+      updateSummary(0,0,0,0);
+      return;
+    }
+
+    const rows = ids.map(clientId=>{
+      const user = latestUsers[clientId] || {};
+      const client = latestClients[clientId] || {};
+      const profile = client.profile || {};
+      const monitor = client.monitor || {};
+      const license = client.license || {};
+
+      const name = profile.name || user.name || "-";
+      const packageValue = profile.package || user.package || "BASIC";
+      const statusValue = profile.status || user.status || "inactive";
+      const isDemo = user.isDemo === true;
+      const floating = num(monitor.floating_pl || monitor.floating);
+      const floatingClass = floating >= 0 ? "status-green" : "status-red";
+
+      if(String(statusValue).toLowerCase() === "active") active++;
+      if(String(packageValue).toUpperCase() === "PRO") pro++;
+      if(isDemo) demo++;
+
+      return `
+        <tr>
+          <td><span class="client-id">${escapeHtml(clientId)}</span></td>
+          <td>${escapeHtml(name)}</td>
+          <td>${packageBadge(packageValue)}</td>
+          <td>${statusBadge(statusValue)}</td>
+          <td>${modeBadge(isDemo)}</td>
+          <td>${eaBadge(monitor.mt5_signal)}</td>
+          <td><span class="money">${escapeHtml(formatCurrency(monitor.balance, monitor))}</span></td>
+          <td><span class="money ${floatingClass}">${escapeHtml(formatCurrency(floating, monitor))}</span></td>
+          <td>${escapeHtml(license.expiryDate || "-")}</td>
+          <td><span class="muted">${escapeHtml(monitor.last_update || "-")}</span></td>
+          <td>
+            <div class="actions">
+              <button class="small-btn" onclick="placeholderAction('View','${escapeHtml(clientId)}')">View</button>
+              <button class="small-btn" onclick="openEditClientModal('${escapeHtml(clientId)}')">Edit</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.innerHTML = rows;
+    updateSummary(ids.length,active,pro,demo);
+  }
+
+  function updateSummary(total,active,pro,demo){
+    setText("totalClients",total);
+    setText("activeClients",active);
+    setText("proClients",pro);
+    setText("demoAccounts",demo);
+  }
+
+
+  function todayDate(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  }
+
+  function getInputValue(id){
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+
+  function setCreateLoading(isLoading){
+    const btn = document.getElementById("createClientBtn");
+    if(!btn) return;
+    btn.disabled = isLoading;
+    btn.innerText = isLoading ? "CREATING..." : "Create Client";
+  }
+
+  function buildNewClientPayload(clientId,name,password,packageValue,statusValue,isDemo,expiryDate,deviceLock){
+    const createdAt = todayDate();
+    return {
+      user:{
+        clientId:clientId,
+        clientKey:clientId,
+        name:name,
+        password:password,
+        package:packageValue,
+        status:statusValue,
+        isDemo:isDemo,
+        sessionToken:"",
+        passwordUpdatedAt:"",
+        createdAt:createdAt
+      },
+      client:{
+        profile:{
+          clientId:clientId,
+          name:name,
+          package:packageValue,
+          status:statusValue
+        },
+        monitor:{
+          mt5_signal:"DISCONNECTED",
+          account_login:0,
+          account_name:"",
+          broker:"",
+          server:"",
+          balance:0,
+          equity:0,
+          margin:0,
+          floating_pl:0,
+          profit_today:0,
+          drawdown:0,
+          buy_count:0,
+          sell_count:0,
+          total_trades:0,
+          account_currency:"USD",
+          currency_symbol:"$",
+          active_symbols:"",
+          last_update:""
+        },
+        command:{
+          close_all:false,
+          close_profit:false,
+          close_loss:false,
+          set_sl:0,
+          set_tp:0,
+          set_be:0,
+          close_low_profit_count:0,
+          close_high_profit_count:0,
+          last_status:"",
+          last_command:"",
+          last_message:"",
+          updatedAt:""
+        },
+        license:{
+          expiryDate:expiryDate,
+          deviceId:"",
+          deviceLock:deviceLock,
+          lastLogin:""
+        },
+        settings:{
+          allowChangePassword:true,
+          telegramEnabled:false,
+          telegramChatId:"",
+          theme:"DARK_TRADING_PRO"
+        }
+      }
+    };
+  }
+
+  window.clearCreateClientForm = function(){
+    document.getElementById("newClientId").value = "";
+    document.getElementById("newClientName").value = "";
+    document.getElementById("newClientPassword").value = "";
+    document.getElementById("newClientPackage").value = "BASIC";
+    document.getElementById("newClientStatus").value = "active";
+    document.getElementById("newClientDemo").value = "false";
+    document.getElementById("newClientExpiry").value = "";
+    document.getElementById("newClientDeviceLock").value = "false";
+  };
+
+  window.createNewClient = async function(){
+    const clientId = getInputValue("newClientId").toUpperCase();
+    const name = getInputValue("newClientName");
+    const password = getInputValue("newClientPassword");
+    const packageValue = getInputValue("newClientPackage").toUpperCase();
+    const statusValue = getInputValue("newClientStatus").toLowerCase();
+    const isDemo = getInputValue("newClientDemo") === "true";
+    const expiryDate = getInputValue("newClientExpiry");
+    const deviceLock = getInputValue("newClientDeviceLock") === "true";
+
+    if(!clientId || !name || !password || !packageValue || !statusValue){
+      showToast("Please complete required client fields.");
+      return;
+    }
+
+    if(!/^[A-Z0-9_-]+$/.test(clientId)){
+      showToast("Client ID only supports letters, numbers, underscore, and dash.");
+      return;
+    }
+
+    if(!["BASIC","PRO"].includes(packageValue)){
+      showToast("Invalid package value.");
+      return;
+    }
+
+    if(!["active","inactive"].includes(statusValue)){
+      showToast("Invalid status value.");
+      return;
+    }
+
+    setCreateLoading(true);
+
+    try{
+      const userRef = ref(db,"TradeLink/users/" + clientId);
+      const clientRef = ref(db,"TradeLink/clients/" + clientId);
+      const existingUser = await get(userRef);
+      const existingClient = await get(clientRef);
+
+      if(existingUser.exists() || existingClient.exists()){
+        showToast("Client ID already exists.");
+        return;
+      }
+
+      const payload = buildNewClientPayload(clientId,name,password,packageValue,statusValue,isDemo,expiryDate,deviceLock);
+
+      await update(ref(db,"TradeLink"),{
+        ["users/" + clientId]:payload.user,
+        ["clients/" + clientId]:payload.client
+      });
+
+      clearCreateClientForm();
+      showToast("Client " + clientId + " created successfully.");
+    }catch(error){
+      console.error(error);
+      showToast("Failed to create client. Check Firebase rules.");
+    }finally{
+      setCreateLoading(false);
+    }
+  };
+
+
+  function setEditLoading(isLoading){
+    const btn = document.getElementById("saveEditClientBtn");
+    if(!btn) return;
+    btn.disabled = isLoading;
+    btn.innerText = isLoading ? "SAVING..." : "Save Changes";
+  }
+
+  window.openEditClientModal = async function(clientId){
+    editingClientId = clientId;
+    document.getElementById("editClientIdView").innerText = clientId;
+    document.getElementById("editClientName").value = "";
+    document.getElementById("editClientPackage").value = "BASIC";
+    document.getElementById("editClientStatus").value = "active";
+    document.getElementById("editClientDemo").value = "false";
+    document.getElementById("editClientExpiry").value = "";
+    document.getElementById("editClientDeviceLock").value = "false";
+    document.getElementById("editAllowChangePassword").value = "true";
+    document.getElementById("editTelegramEnabled").value = "false";
+    document.getElementById("editTelegramChatId").value = "";
+    document.getElementById("editClientModal").style.display = "flex";
+    setEditLoading(true);
+
+    try{
+      const [userSnap, profileSnap, licenseSnap, settingsSnap] = await Promise.all([
+        get(ref(db,"TradeLink/users/" + clientId)),
+        get(ref(db,"TradeLink/clients/" + clientId + "/profile")),
+        get(ref(db,"TradeLink/clients/" + clientId + "/license")),
+        get(ref(db,"TradeLink/clients/" + clientId + "/settings"))
+      ]);
+
+      const user = userSnap.val() || {};
+      const profile = profileSnap.val() || {};
+      const license = licenseSnap.val() || {};
+      const settings = settingsSnap.val() || {};
+
+      document.getElementById("editClientName").value = profile.name || user.name || "";
+      document.getElementById("editClientPackage").value = String(profile.package || user.package || "BASIC").toUpperCase() === "PRO" ? "PRO" : "BASIC";
+      document.getElementById("editClientStatus").value = String(profile.status || user.status || "active").toLowerCase() === "inactive" ? "inactive" : "active";
+      document.getElementById("editClientDemo").value = user.isDemo === true ? "true" : "false";
+      document.getElementById("editClientExpiry").value = license.expiryDate || "";
+      document.getElementById("editClientDeviceLock").value = license.deviceLock === true ? "true" : "false";
+      document.getElementById("editAllowChangePassword").value = settings.allowChangePassword === false ? "false" : "true";
+      document.getElementById("editTelegramEnabled").value = settings.telegramEnabled === true ? "true" : "false";
+      document.getElementById("editTelegramChatId").value = settings.telegramChatId || "";
+    }catch(error){
+      console.error(error);
+      showToast("Failed to load client data.");
+      closeEditClientModal();
+    }finally{
+      setEditLoading(false);
+    }
+  };
+
+  window.closeEditClientModal = function(){
+    editingClientId = "";
+    document.getElementById("editClientModal").style.display = "none";
+    setEditLoading(false);
+  };
+
+  window.saveEditClientChanges = async function(){
+    const clientId = editingClientId;
+    if(!clientId){
+      showToast("No client selected.");
+      return;
+    }
+
+    const name = getInputValue("editClientName");
+    const packageValue = getInputValue("editClientPackage").toUpperCase();
+    const statusValue = getInputValue("editClientStatus").toLowerCase();
+    const isDemo = getInputValue("editClientDemo") === "true";
+    const expiryDate = getInputValue("editClientExpiry");
+    const deviceLock = getInputValue("editClientDeviceLock") === "true";
+    const allowChangePassword = getInputValue("editAllowChangePassword") === "true";
+    const telegramEnabled = getInputValue("editTelegramEnabled") === "true";
+    const telegramChatId = getInputValue("editTelegramChatId");
+
+    if(!name){
+      showToast("Client Name cannot be empty.");
+      return;
+    }
+    if(!["BASIC","PRO"].includes(packageValue)){
+      showToast("Invalid package value.");
+      return;
+    }
+    if(!["active","inactive"].includes(statusValue)){
+      showToast("Invalid status value.");
+      return;
+    }
+
+    setEditLoading(true);
+
+    try{
+      await update(ref(db,"TradeLink"),{
+        ["users/" + clientId + "/name"]:name,
+        ["users/" + clientId + "/package"]:packageValue,
+        ["users/" + clientId + "/status"]:statusValue,
+        ["users/" + clientId + "/isDemo"]:isDemo,
+        ["clients/" + clientId + "/profile/name"]:name,
+        ["clients/" + clientId + "/profile/package"]:packageValue,
+        ["clients/" + clientId + "/profile/status"]:statusValue,
+        ["clients/" + clientId + "/license/expiryDate"]:expiryDate,
+        ["clients/" + clientId + "/license/deviceLock"]:deviceLock,
+        ["clients/" + clientId + "/settings/allowChangePassword"]:allowChangePassword,
+        ["clients/" + clientId + "/settings/telegramEnabled"]:telegramEnabled,
+        ["clients/" + clientId + "/settings/telegramChatId"]:telegramChatId
+      });
+
+      closeEditClientModal();
+      showToast("Client " + clientId + " updated successfully.");
+    }catch(error){
+      console.error(error);
+      showToast("Failed to update client. Check Firebase rules.");
+    }finally{
+      setEditLoading(false);
+    }
+  };
+
+  window.placeholderAction = function(action,clientId){
+    showToast(action + " client " + clientId + " will be added in next steps.");
+  };
+
+  window.logoutAdmin = function(){
+    clearAdminSession();
+    window.location.href = "admin-login.html";
+  };
+
+  validateAdminAccess();
+</script>
+</body>
+</html>
