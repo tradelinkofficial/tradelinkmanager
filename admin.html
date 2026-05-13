@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Admin Panel</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,#0f172a,#111827);color:#f8fafc;padding:18px}
+    .container{max-width:1250px;margin:auto}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
+    .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
+    .admin-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);color:#fcd34d;font-size:12px;font-weight:900;letter-spacing:.35px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:#f8fafc;font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .nav a:hover,.nav button:hover{background:#1e293b;transform:translateY(-1px);box-shadow:0 0 18px rgba(59,130,246,.28)}
+    .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
+    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
+    .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
+    .admin-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .mini{background:#111827;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px}
+    .mini span{display:block;color:#94a3b8;font-size:11px;margin-bottom:6px}
+    .mini strong{font-size:15px;color:#f8fafc;word-break:break-word}
+    .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+    .summary-card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease}
+    .summary-card span{display:block;color:#94a3b8;font-size:12px;margin-bottom:10px}
+    .summary-card strong{font-size:28px;color:#f8fafc}
+    .status-green{color:#22c55e!important}.status-red{color:#ef4444!important}.status-blue{color:#3b82f6!important}.status-orange{color:#f59e0b!important}.status-grey{color:#9ca3af!important}
+    .placeholder{min-height:260px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed rgba(148,163,184,.28);border-radius:18px;background:rgba(17,24,39,.45)}
+    .placeholder h2{font-size:24px;margin-bottom:8px;text-shadow:0 0 18px rgba(59,130,246,.35)}
+    .placeholder p{color:#94a3b8;font-size:14px;line-height:1.6;max-width:580px;margin:auto}
+    .loading{position:fixed;inset:0;background:rgba(2,6,23,.88);display:flex;align-items:center;justify-content:center;z-index:50;color:#f8fafc;text-align:center;padding:20px}
+    .loading-box{background:rgba(30,41,59,.86);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.5);max-width:380px;width:100%}
+    .loading-box h2{font-size:20px;margin-bottom:8px}.loading-box p{color:#94a3b8;font-size:13px}
+    .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(148,163,184,.3);border-top-color:#3b82f6;margin:0 auto 16px;animation:spin .8s linear infinite}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);min-width:260px;max-width:calc(100% - 28px);background:#1e293b;border:1px solid rgba(255,255,255,.08);color:#f8fafc;padding:13px 16px;border-radius:14px;box-shadow:0 18px 45px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center;font-size:14px}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.summary-grid,.admin-row{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.placeholder h2{font-size:21px}}
+  </style>
+</head>
+
+<body>
+<div class="loading" id="loadingScreen">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <h2>Validating Admin Access</h2>
+    <p>Please wait while TradeLink Manager checks your admin session.</p>
+  </div>
+</div>
+
+<div class="container" id="adminApp" style="display:none;">
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Admin Panel MVP v1.00</p>
+    </div>
+    <div class="admin-chip"><span class="dot"></span> ADMIN PANEL</div>
+  </div>
+
+  <div class="nav">
+    <a href="admin.html">Admin Home</a>
+    <button class="logoutBtn" onclick="logoutAdmin()">Logout</button>
+  </div>
+
+  <div class="card">
+    <h3>Admin Access</h3>
+    <div class="admin-row">
+      <div class="mini"><span>Admin ID</span><strong id="adminIdView">-</strong></div>
+      <div class="mini"><span>Name</span><strong id="adminName">-</strong></div>
+      <div class="mini"><span>Role</span><strong id="adminRoleView" class="status-orange">-</strong></div>
+      <div class="mini"><span>Status</span><strong id="adminStatus" class="status-green">-</strong></div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card"><span>Total Clients</span><strong id="totalClients">-</strong></div>
+    <div class="summary-card"><span>Active Clients</span><strong id="activeClients" class="status-green">-</strong></div>
+    <div class="summary-card"><span>PRO Clients</span><strong id="proClients" class="status-blue">-</strong></div>
+    <div class="summary-card"><span>Demo Accounts</span><strong id="demoAccounts" class="status-orange">-</strong></div>
+  </div>
+
+  <div class="card">
+    <h3>Client Management</h3>
+    <div class="placeholder">
+      <div>
+        <h2>Client Management Coming Soon</h2>
+        <p>This shell is ready with admin session protection. The next development step will add realtime client list from Firebase.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Admin session expired.</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = { databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const adminId = localStorage.getItem("adminId") || "";
+  const adminSessionToken = localStorage.getItem("adminSessionToken") || "";
+
+  function clearAdminSession(){
+    localStorage.removeItem("adminId");
+    localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminSessionToken");
+  }
+
+  function redirectLogin(){
+    clearAdminSession();
+    window.location.href = "admin-login.html";
+  }
+
+  function showToast(message){
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2200);
+  }
+
+  function setText(id,value){
+    const el = document.getElementById(id);
+    if(el){ el.innerText = value || "-"; }
+  }
+
+  async function validateAdminAccess(){
+    if(!adminId || !adminSessionToken){
+      redirectLogin();
+      return;
+    }
+
+    try{
+      const adminRef = ref(db,"TradeLink/admins/" + adminId);
+      const snapshot = await get(adminRef);
+
+      if(!snapshot.exists()){
+        redirectLogin();
+        return;
+      }
+
+      const adminData = snapshot.val() || {};
+      const isValid =
+        adminData.role === "admin" &&
+        adminData.status === "active" &&
+        adminData.sessionToken === adminSessionToken;
+
+      if(!isValid){
+        redirectLogin();
+        return;
+      }
+
+      localStorage.setItem("adminRole",adminData.role || "admin");
+      renderAdmin(adminData);
+      enableAdminShell();
+      watchAdminSession();
+      watchClientSummary();
+
+    }catch(error){
+      console.error(error);
+      redirectLogin();
+    }
+  }
+
+  function renderAdmin(adminData){
+    setText("adminIdView",adminData.adminId || adminId);
+    setText("adminName",adminData.name || "Main Admin");
+    setText("adminRoleView",String(adminData.role || "admin").toUpperCase());
+    setText("adminStatus",String(adminData.status || "active").toUpperCase());
+  }
+
+  function enableAdminShell(){
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("adminApp").style.display = "block";
+  }
+
+  function watchAdminSession(){
+    onValue(ref(db,"TradeLink/admins/" + adminId),(snapshot)=>{
+      const data = snapshot.val() || {};
+      const currentToken = localStorage.getItem("adminSessionToken") || "";
+
+      if(!data || data.role !== "admin" || data.status !== "active" || data.sessionToken !== currentToken){
+        showToast("Admin session expired.");
+        setTimeout(redirectLogin,700);
+      }
+    });
+  }
+
+  function watchClientSummary(){
+    onValue(ref(db,"TradeLink/users"),(snapshot)=>{
+      const users = snapshot.val() || {};
+      const ids = Object.keys(users);
+      let active = 0;
+      let pro = 0;
+      let demo = 0;
+
+      ids.forEach(id=>{
+        const user = users[id] || {};
+        if(user.status === "active") active++;
+        if(String(user.package || "").toUpperCase() === "PRO") pro++;
+        if(user.isDemo === true) demo++;
+      });
+
+      setText("totalClients",ids.length);
+      setText("activeClients",active);
+      setText("proClients",pro);
+      setText("demoAccounts",demo);
+    });
+  }
+
+  window.logoutAdmin = function(){
+    clearAdminSession();
+    window.location.href = "admin-login.html";
+  };
+
+  validateAdminAccess();
+</script>
+</body>
+</html>
