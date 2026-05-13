@@ -179,7 +179,22 @@
   const db = getDatabase(app);
 
   const clientId = localStorage.getItem("clientId");
+  const localToken = localStorage.getItem("sessionToken") || "";
+
   if(!clientId){ window.location.href = "index.html"; }
+
+  function validateSession(){
+    onValue(ref(db, "TradeLink/users/" + clientId + "/sessionToken"), (snapshot) => {
+      const firebaseToken = snapshot.val() || "";
+
+      if(localToken !== firebaseToken){
+        localStorage.clear();
+        window.location.href = "index.html";
+      }
+    });
+  }
+
+  validateSession();
 
   const profileRef = ref(db, "TradeLink/clients/" + clientId + "/profile");
   const commandRef = ref(db, "TradeLink/clients/" + clientId + "/command");
