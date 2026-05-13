@@ -247,24 +247,17 @@
           return;
         }
 
-        const userData = snapshot.val();
+        const data = snapshot.val();
 
-        if(userData.password === password && userData.status === "active"){
-
+        if(data.password === password && data.status === "active"){
           localStorage.setItem("clientId", clientId);
-
-          localStorage.setItem(
-            "sessionToken",
-            userData.sessionToken || ""
-          );
-
-          localStorage.setItem("clientKey", userData.clientKey || clientId);
-          localStorage.setItem("clientName", userData.name || "");
-          localStorage.setItem("clientPackage", userData.package || "");
+          localStorage.setItem("clientKey", data.clientKey || clientId);
+          localStorage.setItem("clientName", data.name || "");
+          localStorage.setItem("clientPackage", data.package || "");
 
           window.location.href = "dashboard.html";
         }
-        else if(userData.status !== "active"){
+        else if(data.status !== "active"){
           errorBox.innerText = "Account is inactive. Please contact admin.";
           errorBox.style.display = "block";
         }
