@@ -16,8 +16,7 @@
     body{
       min-height:100vh;
       background:
-        radial-gradient(circle at top, rgba(59,130,246,0.28), transparent 35%),
-        radial-gradient(circle at bottom right, rgba(239,68,68,0.13), transparent 32%),
+        radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 35%),
         linear-gradient(135deg,#0f172a,#111827);
       display:flex;
       align-items:center;
@@ -35,27 +34,28 @@
       border-radius:24px;
       padding:34px 28px;
       backdrop-filter:blur(16px);
-      box-shadow:0 25px 80px rgba(0,0,0,0.48);
+      box-shadow:0 25px 80px rgba(0,0,0,0.45);
       animation:fadeIn .8s ease;
       position:relative;
+      overflow:hidden;
     }
 
-    .admin-badge{
-      width:max-content;
-      margin:0 auto 18px;
-      padding:7px 12px;
-      border-radius:999px;
-      background:rgba(245,158,11,0.14);
-      border:1px solid rgba(245,158,11,0.38);
-      color:#fbbf24;
-      font-size:11px;
-      font-weight:bold;
-      letter-spacing:1px;
+    .login-box:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:radial-gradient(circle at top right, rgba(59,130,246,.18), transparent 35%);
+      pointer-events:none;
+    }
+
+    .content{
+      position:relative;
+      z-index:2;
     }
 
     .logo{
       text-align:center;
-      margin-bottom:28px;
+      margin-bottom:24px;
     }
 
     .logo h1{
@@ -70,6 +70,27 @@
       margin-top:8px;
       font-size:13px;
       color:#94a3b8;
+    }
+
+    .admin-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      margin:0 auto 22px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(245,158,11,0.14);
+      border:1px solid rgba(245,158,11,0.35);
+      color:#f59e0b;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.4px;
+    }
+
+    .badge-wrap{
+      display:flex;
+      justify-content:center;
     }
 
     .form-group{
@@ -137,19 +158,7 @@
       color:#fca5a5;
       font-size:13px;
       text-align:center;
-      line-height:1.5;
-    }
-
-    .secure-note{
-      margin-top:16px;
-      padding:11px 12px;
-      border-radius:12px;
-      background:rgba(6,182,212,0.08);
-      border:1px solid rgba(6,182,212,0.16);
-      color:#94a3b8;
-      font-size:12px;
-      text-align:center;
-      line-height:1.5;
+      line-height:1.45;
     }
 
     .footer{
@@ -157,6 +166,18 @@
       text-align:center;
       font-size:12px;
       color:#64748b;
+    }
+
+    .security-note{
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(15,23,42,.68);
+      border:1px solid rgba(255,255,255,.06);
+      color:#94a3b8;
+      font-size:12px;
+      line-height:1.5;
+      text-align:center;
     }
 
     .status-dot{
@@ -204,35 +225,38 @@
 </head>
 
 <body>
-
   <div class="login-box">
-    <div class="admin-badge">ADMIN ONLY</div>
+    <div class="content">
+      <div class="logo">
+        <h1>TRADELINK MANAGER</h1>
+        <p><span class="status-dot"></span>Admin Access Panel</p>
+      </div>
 
-    <div class="logo">
-      <h1>TRADELINK MANAGER</h1>
-      <p><span class="status-dot"></span>Admin Access Panel</p>
-    </div>
+      <div class="badge-wrap">
+        <div class="admin-badge">ADMIN ONLY</div>
+      </div>
 
-    <div class="form-group">
-      <label>Admin ID</label>
-      <input type="text" id="adminId" placeholder="Enter Admin ID" autocomplete="username" />
-    </div>
+      <div class="form-group">
+        <label>Admin ID</label>
+        <input type="text" id="adminId" placeholder="Enter Admin ID" autocomplete="username" />
+      </div>
 
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
-    </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
+      </div>
 
-    <button id="loginBtn" onclick="adminLogin()">LOGIN ADMIN</button>
+      <button id="loginBtn" onclick="adminLogin()">LOGIN ADMIN</button>
 
-    <div class="error" id="errorBox"></div>
+      <div class="error" id="errorBox"></div>
 
-    <div class="secure-note">
-      Authorized admin access only. Client login is separated from this panel.
-    </div>
+      <div class="security-note">
+        Authorized admin access only. Role access will be loaded from Firebase after login.
+      </div>
 
-    <div class="footer">
-      DARK TRADING PRO ADMIN v1.00
+      <div class="footer">
+        DARK TRADING PRO Admin v1.00
+      </div>
     </div>
   </div>
 
@@ -254,81 +278,96 @@
       window.location.href = "admin.html";
     }
 
-    function generateSessionToken(){
-      const timePart = Date.now().toString(36);
-      const randomPart = Math.random().toString(36).substring(2, 12);
-      return "ADMIN_SESSION_" + timePart + "_" + randomPart;
-    }
-
     function showError(message){
       const errorBox = document.getElementById("errorBox");
       errorBox.innerText = message;
       errorBox.style.display = "block";
     }
 
+    function clearError(){
+      const errorBox = document.getElementById("errorBox");
+      errorBox.innerText = "";
+      errorBox.style.display = "none";
+    }
+
+    function setLoading(isLoading){
+      const loginBtn = document.getElementById("loginBtn");
+      loginBtn.disabled = isLoading;
+      loginBtn.innerText = isLoading ? "CHECKING..." : "LOGIN ADMIN";
+    }
+
+    function clearOldAdminStorage(){
+      localStorage.removeItem("adminId");
+      localStorage.removeItem("adminName");
+      localStorage.removeItem("adminRole");
+      localStorage.removeItem("adminStatus");
+      localStorage.removeItem("adminSessionToken");
+    }
+
+    function generateSessionToken(){
+      return "ADMIN_SESSION_" + Date.now() + "_" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
     window.adminLogin = async function(){
       const adminId = document.getElementById("adminId").value.trim();
       const password = document.getElementById("password").value.trim();
-      const errorBox = document.getElementById("errorBox");
-      const loginBtn = document.getElementById("loginBtn");
 
-      errorBox.style.display = "none";
-      errorBox.innerText = "";
+      clearError();
 
       if(adminId === "" || password === ""){
         showError("Please enter Admin ID and Password.");
         return;
       }
 
-      loginBtn.disabled = true;
-      loginBtn.innerText = "CHECKING...";
+      setLoading(true);
 
       try{
         const adminRef = ref(db, "TradeLink/admins/" + adminId);
         const snapshot = await get(adminRef);
 
         if(!snapshot.exists()){
+          clearOldAdminStorage();
           showError("Invalid Admin ID or Password.");
           return;
         }
 
-        const adminData = snapshot.val();
+        const adminData = snapshot.val() || {};
+        const adminStatus = adminData.status || "inactive";
+        const adminRole = adminData.role || "viewer";
 
-        if(adminData.password !== password){
+        if(String(adminData.password || "") !== password){
+          clearOldAdminStorage();
           showError("Invalid Admin ID or Password.");
           return;
         }
 
-        if(adminData.role !== "admin"){
-          showError("Access denied. This account is not an admin account.");
+        if(adminStatus !== "active"){
+          clearOldAdminStorage();
+          showError("Admin account is inactive. Please contact super admin.");
           return;
         }
 
-        if(adminData.status !== "active"){
-          showError("Admin account is inactive. Please contact system owner.");
-          return;
-        }
-
-        const sessionToken = generateSessionToken();
+        const newSessionToken = generateSessionToken();
 
         await update(adminRef, {
-          sessionToken: sessionToken,
+          sessionToken: newSessionToken,
           lastLogin: new Date().toISOString()
         });
 
         localStorage.setItem("adminId", adminId);
-        localStorage.setItem("adminRole", adminData.role || "admin");
-        localStorage.setItem("adminSessionToken", sessionToken);
-        localStorage.setItem("adminName", adminData.name || "Admin");
+        localStorage.setItem("adminName", adminData.name || "");
+        localStorage.setItem("adminRole", adminRole);
+        localStorage.setItem("adminStatus", adminStatus);
+        localStorage.setItem("adminSessionToken", newSessionToken);
 
         window.location.href = "admin.html";
 
       }catch(error){
-        showError("Connection error. Please check Firebase rules or internet connection.");
         console.error(error);
+        clearOldAdminStorage();
+        showError("Connection error. Please check Firebase rules or internet connection.");
       }finally{
-        loginBtn.disabled = false;
-        loginBtn.innerText = "LOGIN ADMIN";
+        setLoading(false);
       }
     };
 
@@ -338,6 +377,5 @@
       }
     });
   </script>
-
 </body>
 </html>
