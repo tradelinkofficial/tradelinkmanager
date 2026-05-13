@@ -1,40 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TradeLink Manager | Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+      radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),
+      linear-gradient(135deg,#0f172a,#111827);
+      color:#f8fafc;
+      padding:18px;
+    }
+
+    .container{
+      max-width:1250px;
+      margin:auto;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .brand h1{
+      font-size:24px;
+      letter-spacing:1px;
+      text-shadow:0 0 18px rgba(59,130,246,.7);
+    }
+
+    .brand p{
+      font-size:13px;
+      color:#94a3b8;
+      margin-top:4px;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .nav a,
+    .nav button{
+      border:none;
+      text-decoration:none;
+      padding:11px 15px;
+      border-radius:12px;
+      color:#f8fafc;
+      font-size:13px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:.25s;
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow:0 12px 30px rgba(0,0,0,.18);
+    }
+
+    .nav a:hover,
+    .nav button:hover{
+      background:#1e293b;
+      transform:translateY(-1px);
+    }
+
+    .logoutBtn{
+      background:rgba(239,68,68,.18)!important;
+      color:#fca5a5!important;
+    }
+
+    .card{
+      background:rgba(30,41,59,.78);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:18px;
+      box-shadow:0 20px 50px rgba(0,0,0,.25);
+      backdrop-filter:blur(12px);
+      margin-bottom:16px;
+    }
+
+    .card h3{
+      color:#94a3b8;
+      font-size:13px;
+      margin-bottom:12px;
+      font-weight:normal;
+      letter-spacing:.3px;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .bottom-grid{
+      display:grid;
+      grid-template-columns:1.4fr .8fr;
+      gap:16px;
+    }
+
+    .value{
+      font-size:26px;
+      font-weight:bold;
+    }
+
+    .big-balance{
+      font-size:34px;
+      font-weight:bold;
+    }
+
+    .small{
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .profit{
+      color:#22c55e;
+    }
+
+    .loss{
+      color:#ef4444;
+    }
+
+    .status-green{
+      color:#22c55e;
+    }
+
+    .status-red{
+      color:#ef4444;
+    }
+
+    .status-blue{
+      color:#3b82f6;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:11px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      gap:12px;
+    }
+
+    .row span:first-child{
+      color:#94a3b8;
+    }
+
+    .balance-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .eye-btn{
+      width:34px;
+      height:30px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#111827;
+      color:#94a3b8;
+      cursor:pointer;
+    }
+
+    .filter{
+      display:flex;
+      gap:8px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+
+    .filter button{
+      border:none;
+      padding:8px 12px;
+      border-radius:10px;
+      background:#111827;
+      color:#94a3b8;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .filter button.active{
+      background:#3b82f6;
+      color:#fff;
+    }
+
+    .activity{
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .activity strong{
+      display:block;
+      font-size:14px;
+      margin-bottom:4px;
+    }
+
+    .activity span{
+      color:#94a3b8;
+      font-size:13px;
+    }
+
+    canvas{
+      width:100%!important;
+      max-height:330px;
+    }
+
+    @media(max-width:950px){
+      .quick-grid{
+        grid-template-columns:1fr;
+      }
+
+      .bottom-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:520px){
+      body{
+        padding:14px;
+      }
+
+      .brand h1{
+        font-size:21px;
+      }
+
+      .value{
+        font-size:24px;
+      }
+
+      .nav{
+        width:100%;
+      }
+
+      .nav a,
+      .nav button{
+        flex:1;
+        text-align:center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Dashboard MVP v1.00</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <a href="controlpanel.html">Control Panel</a>
+    <a href="setting.html">Setting</a>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- ACCOUNT INFO -->
+  <div class="card">
+    <h3>Account Information</h3>
+
+    <div class="row">
+      <span>Client Name</span>
+      <span id="clientName">-</span>
+    </div>
+
+    <div class="row">
+      <span>Client ID</span>
+      <span id="clientIdView">-</span>
+    </div>
+
+    <div class="row">
+      <span>Package</span>
+      <span id="clientPackage">-</span>
+    </div>
+
+    <div class="row">
+      <span>Status</span>
+      <span id="clientStatus">-</span>
+    </div>
+
+    <div class="row">
+      <span>MT5 Signal</span>
+      <span id="mt5Signal">DISCONNECTED</span>
+    </div>
+
+    <div class="row" style="border-bottom:none;">
+      <span>Balance</span>
+
+      <span class="balance-row">
+        <span class="big-balance" id="balance">*****</span>
+
+        <button class="eye-btn" onclick="toggleBalance()">
+          👁
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <!-- QUICK GRID -->
+  <div class="quick-grid">
+
+    <!-- FLOATING -->
+    <div class="card">
+      <h3>Floating P/L</h3>
+
+      <div class="value" id="floating">0.00</div>
+
+      <div class="small" id="activeSymbols">-</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card">
+      <h3>Trading Statistics</h3>
+
+      <div class="row">
+        <span>Buy Count</span>
+        <span class="profit" id="buyCount">0</span>
+      </div>
+
+      <div class="row">
+        <span>Sell Count</span>
+        <span class="loss" id="sellCount">0</span>
+      </div>
+
+      <div class="row">
+        <span>Total Trades</span>
+        <span id="totalTrades">0</span>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="card">
+      <h3>Recent Activity</h3>
+
+      <div class="activity">
+        <strong id="activityUpdate">-</strong>
+        <span>Last Firebase update</span>
+      </div>
+
+      <div class="activity">
+        <strong id="activityClient">-</strong>
+        <span>Active login client</span>
+      </div>
+
+      <div class="activity">
+        <strong id="activityPackage">-</strong>
+        <span>Current account package</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="card">
+    <h3>Trading Analytics (%)</h3>
+
+    <div class="filter">
+      <button class="active" onclick="changeAnalytics('daily',this)">Daily</button>
+      <button onclick="changeAnalytics('weekly',this)">Weekly</button>
+      <button onclick="changeAnalytics('monthly',this)">Monthly</button>
+    </div>
+
+    <canvas id="historyChart"></canvas>
+  </div>
+
+</div>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
-  };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+import {
+  getDatabase,
+  ref,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const clientId = localStorage.getItem("clientId");
-  const localToken = localStorage.getItem("sessionToken") || "";
+const firebaseConfig = {
+  databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+};
 
-  if(!clientId){
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const clientId = localStorage.getItem("clientId");
+const localToken = localStorage.getItem("sessionToken") || "";
+
+if(!clientId){
+  window.location.href = "index.html";
+}
+
+// =========================
+// SESSION VALIDATION
+// =========================
+const sessionRef = ref(
+  db,
+  "TradeLink/users/" + clientId + "/sessionToken"
+);
+
+onValue(sessionRef,(snapshot)=>{
+
+  const firebaseToken = snapshot.val() || "";
+
+  if(localToken !== firebaseToken){
+
+    localStorage.clear();
+
     window.location.href = "index.html";
   }
 
-  // =========================
-  // SESSION VALIDATION
-  // =========================
-  const sessionRef = ref(db, "TradeLink/users/" + clientId + "/sessionToken");
+});
 
-  onValue(sessionRef, (snapshot) => {
-    const firebaseToken = snapshot.val() || "";
+// =========================
+// FIREBASE REF
+// =========================
+const profileRef = ref(
+  db,
+  "TradeLink/clients/" + clientId + "/profile"
+);
 
-    if(localToken !== firebaseToken){
-      localStorage.clear();
-      window.location.href = "index.html";
+const monitorRef = ref(
+  db,
+  "TradeLink/clients/" + clientId + "/monitor"
+);
+
+const historyRef = ref(
+  db,
+  "TradeLink/clients/" + clientId + "/history"
+);
+
+// =========================
+// GLOBAL
+// =========================
+let balanceVisible = false;
+let balanceValue = 0;
+let currencySymbol = "$";
+let rawHistory = {};
+let analyticsMode = "daily";
+
+// =========================
+// HELPERS
+// =========================
+function num(v){
+  return Number(v || 0);
+}
+
+function money(v){
+  return currencySymbol + num(v).toFixed(2);
+}
+
+function setText(id,val){
+  document.getElementById(id).innerText = val ?? "-";
+}
+
+// =========================
+// BALANCE
+// =========================
+function renderBalance(){
+
+  document.getElementById("balance").innerText =
+    balanceVisible
+    ? money(balanceValue)
+    : "*****";
+
+}
+
+window.toggleBalance = function(){
+
+  balanceVisible = !balanceVisible;
+
+  renderBalance();
+};
+
+renderBalance();
+
+// =========================
+// PROFILE
+// =========================
+onValue(profileRef,(snapshot)=>{
+
+  const data = snapshot.val() || {};
+
+  const packageValue =
+    (data.package || "-").toUpperCase();
+
+  const statusValue =
+    data.status || "-";
+
+  setText("clientName",data.name || "-");
+
+  setText("clientIdView",clientId);
+
+  setText("clientPackage",packageValue);
+
+  setText("clientStatus",statusValue);
+
+  setText("activityClient",clientId);
+
+  setText("activityPackage",packageValue);
+
+  document.getElementById("clientPackage").className =
+    packageValue === "PRO"
+    ? "status-green"
+    : "status-blue";
+
+  document.getElementById("clientStatus").className =
+    statusValue === "active"
+    ? "status-green"
+    : "status-red";
+
+});
+
+// =========================
+// MONITOR
+// =========================
+onValue(monitorRef,(snapshot)=>{
+
+  const data = snapshot.val() || {};
+
+  balanceValue = num(data.balance);
+
+  currencySymbol =
+    data.currency_symbol || "$";
+
+  renderBalance();
+
+  const floating =
+    num(data.floating_pl);
+
+  const floatingEl =
+    document.getElementById("floating");
+
+  floatingEl.innerText =
+    money(floating);
+
+  floatingEl.className =
+    "value " + (floating >= 0 ? "profit" : "loss");
+
+  setText(
+    "activeSymbols",
+    data.active_symbols || "-"
+  );
+
+  const signal =
+    data.mt5_signal || "DISCONNECTED";
+
+  setText("mt5Signal",signal);
+
+  document.getElementById("mt5Signal").className =
+    signal === "CONNECTED"
+    ? "status-green"
+    : "status-red";
+
+  setText(
+    "activityUpdate",
+    data.last_update || "-"
+  );
+
+  setText(
+    "buyCount",
+    data.buy_count || 0
+  );
+
+  setText(
+    "sellCount",
+    data.sell_count || 0
+  );
+
+  setText(
+    "totalTrades",
+    data.total_trades || 0
+  );
+
+});
+
+// =========================
+// CHART
+// =========================
+const historyChart =
+new Chart(document.getElementById("historyChart"),{
+
+  type:"line",
+
+  data:{
+    labels:[],
+    datasets:[
+      {
+        label:"Growth %",
+        data:[],
+        borderWidth:2,
+        tension:.35
+      }
+    ]
+  },
+
+  options:{
+    responsive:true,
+
+    plugins:{
+      legend:{
+        labels:{
+          color:"#f8fafc"
+        }
+      }
+    },
+
+    scales:{
+      x:{
+        ticks:{
+          color:"#94a3b8"
+        },
+
+        grid:{
+          color:"rgba(255,255,255,.06)"
+        }
+      },
+
+      y:{
+        ticks:{
+          color:"#94a3b8"
+        },
+
+        grid:{
+          color:"rgba(255,255,255,.06)"
+        }
+      }
     }
+  }
+
+});
+
+onValue(historyRef,(snapshot)=>{
+
+  rawHistory = snapshot.val() || {};
+
+  renderHistory();
+
+});
+
+function renderHistory(){
+
+  const labels = [];
+  const growthData = [];
+
+  const keys =
+    Object.keys(rawHistory).sort();
+
+  if(keys.length === 0){
+
+    historyChart.update();
+
+    return;
+  }
+
+  const firstBalance =
+    num(rawHistory[keys[0]].balance);
+
+  keys.forEach(date=>{
+
+    const item =
+      rawHistory[date] || {};
+
+    const currentBalance =
+      num(item.balance);
+
+    const growth =
+      firstBalance > 0
+      ? ((currentBalance - firstBalance)
+      / firstBalance) * 100
+      : 0;
+
+    labels.push(date);
+
+    growthData.push(growth.toFixed(2));
+
   });
 
-  // =========================
-  // LOGOUT
-  // =========================
-  window.logout = function(){
-    localStorage.clear();
-    window.location.href = "index.html";
-  };
+  historyChart.data.labels = labels;
+
+  historyChart.data.datasets[0].data =
+    growthData;
+
+  historyChart.update();
+
+}
+
+// =========================
+// ANALYTICS FILTER
+// =========================
+window.changeAnalytics = function(mode,btn){
+
+  analyticsMode = mode;
+
+  document
+    .querySelectorAll(".filter button")
+    .forEach(b=>b.classList.remove("active"));
+
+  btn.classList.add("active");
+
+  renderHistory();
+
+};
+
+// =========================
+// LOGOUT
+// =========================
+window.logout = function(){
+
+  localStorage.clear();
+
+  window.location.href = "index.html";
+
+};
+
 </script>
+
+</body>
+</html>
