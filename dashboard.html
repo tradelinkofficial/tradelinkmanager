@@ -49,9 +49,16 @@
     .analytics-head h3{margin-bottom:4px}
     .analytics-sub{color:#94a3b8;font-size:12px}
     .analytics-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-    .metric-box{background:rgba(17,24,39,.72);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px}
-    .metric-box span{display:block;color:#94a3b8;font-size:11px;margin-bottom:6px}
-    .metric-box strong{font-size:17px;letter-spacing:.2px}
+    .metric-box{background:linear-gradient(180deg,rgba(17,24,39,.86),rgba(15,23,42,.72));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;position:relative;overflow:hidden}
+    .metric-box:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(59,130,246,.12),transparent 38%);pointer-events:none}
+    .metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;position:relative;z-index:1}
+    .metric-label{display:block;color:#94a3b8;font-size:11px;margin-bottom:0!important}
+    .metric-icon{width:24px;height:24px;border-radius:9px;display:inline-flex!important;align-items:center;justify-content:center;background:rgba(59,130,246,.12);border:1px solid rgba(255,255,255,.06);font-size:13px;color:#f8fafc;margin-bottom:0!important}
+    .metric-box strong{font-size:18px;letter-spacing:.2px;position:relative;z-index:1}
+    .chart-wrap{position:relative;background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.045);border-radius:16px;padding:12px}
+    .chart-wrap:before{content:"";position:absolute;left:12px;right:12px;top:12px;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.35),transparent)}
+    .chart-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:12px;pointer-events:none;padding:20px}
+    .chart-empty strong{display:block;color:#f8fafc;font-size:13px;margin-bottom:4px}
     canvas{width:100%!important;max-height:330px;min-height:260px}
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -132,13 +139,28 @@
       </div>
 
       <div class="analytics-metrics">
-        <div class="metric-box"><span>Balance Growth</span><strong id="balanceGrowthPct">0.00%</strong></div>
-        <div class="metric-box"><span>Floating P/L</span><strong id="floatingPct">0.00%</strong></div>
-        <div class="metric-box"><span>Profit Today</span><strong id="profitTodayPct">0.00%</strong></div>
-        <div class="metric-box"><span>Drawdown</span><strong id="drawdownPct">0.00%</strong></div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Balance Growth</span><span class="metric-icon">↗</span></div>
+          <strong id="balanceGrowthPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Floating P/L</span><span class="metric-icon">≈</span></div>
+          <strong id="floatingPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Profit Today</span><span class="metric-icon">✓</span></div>
+          <strong id="profitTodayPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Drawdown</span><span class="metric-icon">!</span></div>
+          <strong id="drawdownPct">0.00%</strong>
+        </div>
       </div>
 
-      <canvas id="historyChart"></canvas>
+      <div class="chart-wrap">
+        <canvas id="historyChart"></canvas>
+        <div class="chart-empty" id="chartEmpty"><strong>No analytics data yet</strong><span>Waiting for EA history update from Firebase.</span></div>
+      </div>
     </div>
 
     <div class="card">
@@ -364,7 +386,15 @@
     }
   });
 
-  const historyChart = new Chart(document.getElementById("historyChart"),{
+  function setChartEmpty(show){
+    const el = document.getElementById("chartEmpty");
+    if(el){
+      el.style.display = show ? "flex" : "none";
+    }
+  }
+
+  const historyCanvas = document.getElementById("historyChart");
+  const historyChart = new Chart(historyCanvas,{
     type:"line",
     data:{
       labels:[],
@@ -376,6 +406,7 @@
     },
     options:{
       responsive:true,
+      maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       plugins:{
         legend:{labels:{color:"#f8fafc"}},
@@ -421,7 +452,7 @@
     const floatingPctData = [];
     const drawdownPctData = [];
     const grouped = {};
-    const historyKeys = Object.keys(rawHistory).sort();
+    const historyKeys = Object.keys(rawHistory || {}).sort();
 
     historyKeys.forEach(date=>{
       const item = rawHistory[date] || {};
@@ -432,7 +463,7 @@
       }
 
       if(analyticsMode === "monthly"){
-        key = date.substring(0,7);
+        key = String(date).substring(0,7);
       }
 
       grouped[key] = {
@@ -447,6 +478,7 @@
     const orderedKeys = Object.keys(grouped).sort();
     const firstKey = orderedKeys[0];
     const firstBalance = firstKey ? num(grouped[firstKey].balance) : 0;
+    let latestMetrics = null;
 
     orderedKeys.forEach(key=>{
       const item = grouped[key];
@@ -471,10 +503,12 @@
       floatingPctData.push(Number(floatingPercent.toFixed(2)));
       drawdownPctData.push(Number(drawdownPercent.toFixed(2)));
 
-      setMetric("balanceGrowthPct",balanceGrowth);
-      setMetric("floatingPct",floatingPercent);
-      setMetric("profitTodayPct",profitTodayPercent);
-      setMetric("drawdownPct",drawdownPercent,true);
+      latestMetrics = {
+        balanceGrowth,
+        floatingPercent,
+        profitTodayPercent,
+        drawdownPercent
+      };
     });
 
     if(labels.length === 0 && lastMonitorPoint){
@@ -486,11 +520,27 @@
       floatingPctData.push(Number(liveFloatingPct.toFixed(2)));
       drawdownPctData.push(0);
 
+      latestMetrics = {
+        balanceGrowth:0,
+        floatingPercent:liveFloatingPct,
+        profitTodayPercent:0,
+        drawdownPercent:0
+      };
+    }
+
+    if(latestMetrics){
+      setMetric("balanceGrowthPct",latestMetrics.balanceGrowth);
+      setMetric("floatingPct",latestMetrics.floatingPercent);
+      setMetric("profitTodayPct",latestMetrics.profitTodayPercent);
+      setMetric("drawdownPct",latestMetrics.drawdownPercent,true);
+    }else{
       setMetric("balanceGrowthPct",0);
-      setMetric("floatingPct",liveFloatingPct);
+      setMetric("floatingPct",0);
       setMetric("profitTodayPct",0);
       setMetric("drawdownPct",0,true);
     }
+
+    setChartEmpty(labels.length === 0);
 
     historyChart.data.labels = labels;
     historyChart.data.datasets[0].data = balanceGrowthData;
