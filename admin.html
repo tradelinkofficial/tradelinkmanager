@@ -400,8 +400,9 @@
       }
 
       const adminData = snapshot.val() || {};
+      const allowedAdminRoles = ["admin", "super_admin"];
       const isValid =
-        adminData.role === "admin" &&
+        allowedAdminRoles.includes(adminData.role) &&
         adminData.status === "active" &&
         adminData.sessionToken === adminSessionToken;
 
@@ -439,7 +440,7 @@
       const data = snapshot.val() || {};
       const currentToken = localStorage.getItem("adminSessionToken") || "";
 
-      if(!data || data.role !== "admin" || data.status !== "active" || data.sessionToken !== currentToken){
+      if(!data || !["admin", "super_admin"].includes(data.role) || data.status !== "active" || data.sessionToken !== currentToken){
         showToast("Admin session expired.");
         setTimeout(redirectLogin,700);
       }
