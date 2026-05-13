@@ -53,6 +53,7 @@
 
     .locked{display:none;margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#fcd34d;font-size:13px}
 
+
     .status-badge{display:inline-flex;align-items:center;justify-content:center;min-width:86px;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1}
     .status-success{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.35);color:#86efac}
     .status-blocked{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fcd34d}
@@ -178,24 +179,7 @@
   const db = getDatabase(app);
 
   const clientId = localStorage.getItem("clientId");
-  const localToken = localStorage.getItem("sessionToken") || "";
-
-  if(!clientId){
-    window.location.href = "index.html";
-  }
-
-  function validateSession(){
-    onValue(ref(db, "TradeLink/users/" + clientId + "/sessionToken"), (snapshot) => {
-      const firebaseToken = snapshot.val() || "";
-
-      if(localToken !== firebaseToken){
-        localStorage.clear();
-        window.location.href = "index.html";
-      }
-    });
-  }
-
-  validateSession();
+  if(!clientId){ window.location.href = "index.html"; }
 
   const profileRef = ref(db, "TradeLink/clients/" + clientId + "/profile");
   const commandRef = ref(db, "TradeLink/clients/" + clientId + "/command");
