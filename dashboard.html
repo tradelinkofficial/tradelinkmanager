@@ -27,7 +27,7 @@
     .symbol-line{color:#94a3b8;font-size:13px;margin-top:7px;font-weight:bold}
     .small{color:#94a3b8;font-size:12px;margin-top:6px}
     .profit{color:#22c55e}.loss{color:#ef4444}.info{color:#06b6d4}.warning{color:#f59e0b}
-    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}
+    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}.status-gray{color:#9ca3af}
     .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);gap:12px}
     .row span:first-child{color:#94a3b8}
     .row span:last-child{text-align:right;font-weight:bold}
@@ -37,6 +37,7 @@
     .mini-signal{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(17,24,39,.85);border:1px solid rgba(255,255,255,.06);font-size:12px;font-weight:bold;color:#94a3b8}
     .dot{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,.9);animation:pulse 1.5s infinite}
     .dot.connected{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9)}
+    .dot.pause{background:#9ca3af;box-shadow:0 0 10px rgba(156,163,175,.55)}
     .filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
     .filter button{border:none;padding:8px 12px;border-radius:10px;background:#111827;color:#94a3b8;cursor:pointer;border:1px solid rgba(255,255,255,.06)}
     .filter button.active{background:#3b82f6;color:#fff}
@@ -85,6 +86,7 @@
     <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
     <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
     <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+    <div class="row"><span>EA Status</span><span id="eaStatus">DISCONNECTED</span></div>
     <div class="row">
       <span>Balance</span>
       <span class="balance-row">
@@ -157,26 +159,9 @@
   const db = getDatabase(app);
 
   const clientId = localStorage.getItem("clientId");
-
   if(!clientId){
     window.location.href="index.html";
   }
-
-  function validateSession(){
-    const sessionRef = ref(db,"TradeLink/users/"+clientId+"/sessionToken");
-
-    onValue(sessionRef,(snapshot)=>{
-      const firebaseToken = snapshot.val() || "";
-      const currentLocalToken = localStorage.getItem("sessionToken") || "";
-
-      if(firebaseToken && currentLocalToken && currentLocalToken !== firebaseToken){
-        localStorage.clear();
-        window.location.href="index.html";
-      }
-    });
-  }
-
-  validateSession();
 
   document.getElementById("clientIdView").innerText = clientId;
   document.getElementById("activityClient").innerText = clientId;
@@ -227,6 +212,20 @@
     if(el){
       el.innerText = value ?? "-";
     }
+  }
+
+  function normalizeEAStatus(value){
+    const signal = String(value || "DISCONNECTED").toUpperCase();
+
+    if(signal === "CONNECTED"){
+      return {text:"CONNECTED", className:"status-green", dotClass:"connected"};
+    }
+
+    if(signal === "EA_PAUSE"){
+      return {text:"EA PAUSE", className:"status-gray", dotClass:"pause"};
+    }
+
+    return {text:"DISCONNECTED", className:"status-red", dotClass:""};
   }
 
   function getCurrencySymbol(data){
@@ -310,6 +309,7 @@
 
     const floating = num(data.floating_pl || data.floating);
     const signal = data.mt5_signal || "DISCONNECTED";
+    const eaStatus = normalizeEAStatus(signal);
     const activeSymbols = data.active_symbols || "-";
 
     const floatingEl = document.getElementById("floating");
@@ -317,16 +317,18 @@
     floatingEl.className = "value " + (floating >= 0 ? "profit" : "loss");
 
     setText("activeSymbols",activeSymbols);
-    setText("mt5Signal",signal);
-    setText("activitySignal",signal);
+    setText("mt5Signal",eaStatus.text);
+    setText("eaStatus",eaStatus.text);
+    setText("activitySignal",eaStatus.text);
+
+    document.getElementById("mt5Signal").className = eaStatus.className;
+    document.getElementById("eaStatus").className = eaStatus.className;
+    document.getElementById("activitySignal").className = eaStatus.className;
 
     const signalDot = document.getElementById("signalDot");
-    if(signal === "CONNECTED"){
-      signalDot.classList.add("connected");
-      document.getElementById("activitySignal").className = "profit";
-    }else{
-      signalDot.classList.remove("connected");
-      document.getElementById("activitySignal").className = "loss";
+    signalDot.classList.remove("connected","pause");
+    if(eaStatus.dotClass){
+      signalDot.classList.add(eaStatus.dotClass);
     }
 
     const lastUpdate = data.last_update || "-";
