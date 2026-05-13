@@ -179,15 +179,14 @@
   const db = getDatabase(app);
 
   const clientId = localStorage.getItem("clientId");
-  const localToken = localStorage.getItem("sessionToken") || "";
-
   if(!clientId){ window.location.href = "index.html"; }
 
   function validateSession(){
     onValue(ref(db, "TradeLink/users/" + clientId + "/sessionToken"), (snapshot) => {
       const firebaseToken = snapshot.val() || "";
+      const currentLocalToken = localStorage.getItem("sessionToken") || "";
 
-      if(localToken !== firebaseToken){
+      if(firebaseToken && currentLocalToken && currentLocalToken !== firebaseToken){
         localStorage.clear();
         window.location.href = "index.html";
       }
