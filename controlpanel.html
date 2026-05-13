@@ -26,6 +26,7 @@
     .mini span{display:block;color:#94a3b8;font-size:11px;margin-bottom:4px}
     .mini strong{font-size:14px;color:#f8fafc}
     .package-basic{color:#06b6d4!important}.package-pro{color:#22c55e!important}
+    .ea-connected{color:#22c55e!important}.ea-pause{color:#9ca3af!important}.ea-disconnected{color:#ef4444!important}
 
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -92,6 +93,7 @@
       <div class="mini"><span>Name</span><strong id="clientName">-</strong></div>
       <div class="mini"><span>Package</span><strong id="clientPackage">-</strong></div>
       <div class="mini"><span>Status</span><strong id="clientStatus">-</strong></div>
+      <div class="mini"><span>EA Status</span><strong id="eaStatus" class="ea-disconnected">DISCONNECTED</strong></div>
     </div>
   </div>
 
@@ -197,6 +199,7 @@
 
   const profileRef = ref(db, "TradeLink/clients/" + clientId + "/profile");
   const commandRef = ref(db, "TradeLink/clients/" + clientId + "/command");
+  const monitorRef = ref(db, "TradeLink/clients/" + clientId + "/monitor");
 
   let clientPackage = "BASIC";
   let pendingAction = null;
@@ -246,6 +249,29 @@
     document.getElementById("clientName").innerText = data.name || "-";
     document.getElementById("clientStatus").innerText = data.status || "-";
     setPackageUI(data.package || "BASIC");
+  });
+
+  function renderEAStatus(value){
+    const eaStatusEl = document.getElementById("eaStatus");
+    const signal = String(value || "DISCONNECTED").toUpperCase();
+
+    eaStatusEl.className = "";
+
+    if(signal === "CONNECTED"){
+      eaStatusEl.innerText = "CONNECTED";
+      eaStatusEl.classList.add("ea-connected");
+    }else if(signal === "EA_PAUSE"){
+      eaStatusEl.innerText = "EA PAUSE";
+      eaStatusEl.classList.add("ea-pause");
+    }else{
+      eaStatusEl.innerText = "DISCONNECTED";
+      eaStatusEl.classList.add("ea-disconnected");
+    }
+  }
+
+  onValue(monitorRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    renderEAStatus(data.mt5_signal || "DISCONNECTED");
   });
 
   function renderLastCommandStatus(data){
