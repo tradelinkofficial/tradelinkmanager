@@ -22,10 +22,11 @@
     .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.2px;background:#f59e0b;color:#111827;white-space:nowrap}
     .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .row span:first-child{color:#94a3b8}.row span:last-child{font-weight:bold;text-align:right}
-    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}
+    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}.status-gray{color:#9ca3af}
     .signal{display:flex;align-items:center;gap:8px}
     .dot{width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,.8);animation:pulse 1.5s infinite}
     .dot.connected{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.8)}
+    .dot.paused{background:#9ca3af;box-shadow:0 0 12px rgba(156,163,175,.65)}
     .password-box{display:flex;flex-direction:column;gap:12px}
     .field{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
     .field label{color:#94a3b8;font-size:13px}
@@ -71,7 +72,7 @@
       <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
       <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
       <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
-      <div class="row"><span>MT5 Signal</span><span class="signal"><span class="dot" id="signalDot"></span><span id="mt5Signal">DISCONNECTED</span></span></div>
+      <div class="row"><span>EA Status</span><span class="signal"><span class="dot" id="signalDot"></span><span id="eaStatus">DISCONNECTED</span></span></div>
     </div>
 
     <div class="card">
@@ -208,15 +209,22 @@
     setText("lastUpdate",data.last_update);
 
     const signal = data.mt5_signal || "DISCONNECTED";
-    setText("mt5Signal",signal);
-
+    const eaStatus = document.getElementById("eaStatus");
     const signalDot = document.getElementById("signalDot");
+
+    signalDot.classList.remove("connected","paused");
+
     if(signal === "CONNECTED"){
+      eaStatus.innerText = "CONNECTED";
+      eaStatus.className = "status-green";
       signalDot.classList.add("connected");
-      document.getElementById("mt5Signal").className = "status-green";
+    }else if(signal === "EA_PAUSE"){
+      eaStatus.innerText = "EA PAUSE";
+      eaStatus.className = "status-gray";
+      signalDot.classList.add("paused");
     }else{
-      signalDot.classList.remove("connected");
-      document.getElementById("mt5Signal").className = "status-red";
+      eaStatus.innerText = "DISCONNECTED";
+      eaStatus.className = "status-red";
     }
   });
 
