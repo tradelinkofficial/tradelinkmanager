@@ -27,6 +27,9 @@
     .mini strong{font-size:14px;color:#f8fafc}
     .package-basic{color:#06b6d4!important}.package-pro{color:#22c55e!important}
     .ea-connected{color:#22c55e!important}.ea-pause{color:#9ca3af!important}.ea-disconnected{color:#ef4444!important}
+    .demo-mini{display:none}
+    .demo-mode-active .demo-mini{display:block}
+    .demo-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;border-radius:999px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:12px;font-weight:900;letter-spacing:.3px}
 
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -53,6 +56,8 @@
     .note span{color:#cbd5e1}
 
     .locked{display:none;margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#fcd34d;font-size:13px}
+    .demo-disabled-note{display:none;margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#fcd34d;font-size:13px}
+    .demo-mode-active .demo-disabled-note{display:block}
 
 
     .status-badge{display:inline-flex;align-items:center;justify-content:center;min-width:86px;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1}
@@ -94,12 +99,14 @@
       <div class="mini"><span>Package</span><strong id="clientPackage">-</strong></div>
       <div class="mini"><span>Status</span><strong id="clientStatus">-</strong></div>
       <div class="mini"><span>EA Status</span><strong id="eaStatus" class="ea-disconnected">DISCONNECTED</strong></div>
+      <div class="mini demo-mini" id="demoModeBox"><span>Mode</span><strong class="demo-badge">DEMO MODE</strong></div>
     </div>
   </div>
 
   <div class="note">
     <strong>Note:</strong>
     <span>BASIC package can use Close All, Set Stop Loss, Set Take Profit, and Set Break Even only. PRO package unlocks all control panel functions.</span>
+    <div class="demo-disabled-note" id="demoDisabledNote">Demo mode command disabled.</div>
   </div>
 
   <div class="grid">
@@ -181,7 +188,9 @@
   const db = getDatabase(app);
 
   const clientId = localStorage.getItem("clientId");
+  const isDemoMode = localStorage.getItem("isDemo") === "true";
   if(!clientId){ window.location.href = "index.html"; }
+  if(isDemoMode){ document.body.classList.add("demo-mode-active"); }
 
   function validateSession(){
     onValue(ref(db, "TradeLink/users/" + clientId + "/sessionToken"), (snapshot) => {
@@ -226,22 +235,31 @@
     packageEl.innerText = clientPackage;
     packageEl.className = clientPackage === "PRO" ? "package-pro" : "package-basic";
 
+    applyControlAvailability();
+  }
+
+  function applyControlAvailability(){
     const isPro = clientPackage === "PRO";
-
-    document.querySelectorAll(".pro-action").forEach(el => {
-      el.disabled = !isPro;
-    });
-
-    document.querySelectorAll(".pro-input").forEach(el => {
-      el.disabled = !isPro;
-    });
 
     document.querySelectorAll(".pro-wrap").forEach(el => {
       if(isPro){ el.classList.remove("basic-locked"); }
       else{ el.classList.add("basic-locked"); }
     });
 
-    document.getElementById("proLockedNotice").style.display = isPro ? "none" : "block";
+    document.getElementById("proLockedNotice").style.display = (!isPro && !isDemoMode) ? "block" : "none";
+
+    document.querySelectorAll(".basic-action").forEach(el => {
+      el.disabled = isDemoMode;
+    });
+
+    document.querySelectorAll(".pro-action").forEach(el => {
+      el.disabled = isDemoMode || !isPro;
+    });
+
+    document.querySelectorAll("input").forEach(el => {
+      const isProInput = el.classList.contains("pro-input");
+      el.disabled = isDemoMode || (isProInput && !isPro);
+    });
   }
 
   onValue(profileRef, (snapshot) => {
@@ -306,12 +324,14 @@
   });
 
   function canUseCommand(commandKey){
+    if(isDemoMode) return false;
     const basicAllowed = ["close_all","set_sl","set_tp","set_be"];
     if(clientPackage === "PRO") return true;
     return basicAllowed.includes(commandKey);
   }
 
   async function sendCommand(payload, label){
+    if(isDemoMode){ showToast("Demo mode command disabled."); return; }
     try{
       await update(commandRef, {...payload, updatedAt: nowText()});
       showToast(label + " command sent.");
@@ -322,6 +342,7 @@
   }
 
   window.confirmCommand = function(commandKey, value, label){
+    if(isDemoMode){ showToast("Demo mode command disabled."); return; }
     if(!canUseCommand(commandKey)){ showToast("This function requires PRO package."); return; }
     pendingAction = { payload: {[commandKey]: value}, label };
     document.getElementById("modalTitle").innerText = label;
@@ -330,6 +351,7 @@
   };
 
   window.submitNumberCommand = function(commandKey, inputId, label){
+    if(isDemoMode){ showToast("Demo mode command disabled."); return; }
     if(!canUseCommand(commandKey)){ showToast("This function requires PRO package."); return; }
     const input = document.getElementById(inputId);
     const value = Number(input.value);
@@ -346,6 +368,7 @@
   };
 
   document.getElementById("confirmBtn").onclick = async function(){
+    if(isDemoMode){ showToast("Demo mode command disabled."); closeModal(); return; }
     if(!pendingAction) return;
     await sendCommand(pendingAction.payload, pendingAction.label);
     closeModal();
