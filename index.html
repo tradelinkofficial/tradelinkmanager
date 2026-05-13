@@ -184,8 +184,8 @@
     </div>
 
     <div class="form-group">
-      <label>Client ID</label>
-      <input type="text" id="clientId" placeholder="Example: TL0001" autocomplete="username" />
+      <label>Username ID</label>
+      <input type="text" id="clientId" placeholder="Enter your Username ID" autocomplete="username" />
     </div>
 
     <div class="form-group">
@@ -229,7 +229,7 @@
       errorBox.innerText = "";
 
       if(clientId === "" || password === ""){
-        errorBox.innerText = "Please enter Client ID and Password.";
+        errorBox.innerText = "Please enter Username ID and Password.";
         errorBox.style.display = "block";
         return;
       }
@@ -242,27 +242,29 @@
         const snapshot = await get(userRef);
 
         if(!snapshot.exists()){
-          errorBox.innerText = "Invalid Client ID or Password.";
+          errorBox.innerText = "Invalid Username ID or Password.";
           errorBox.style.display = "block";
           return;
         }
 
-        const data = snapshot.val();
+        const userData = snapshot.val();
 
-        if(data.password === password && data.status === "active"){
+        if(userData.password === password && userData.status === "active"){
           localStorage.setItem("clientId", clientId);
-          localStorage.setItem("clientKey", data.clientKey || clientId);
-          localStorage.setItem("clientName", data.name || "");
-          localStorage.setItem("clientPackage", data.package || "");
+          localStorage.setItem("sessionToken", userData.sessionToken || "");
+          localStorage.setItem("isDemo", userData.isDemo === true ? "true" : "false");
+          localStorage.setItem("clientKey", userData.clientKey || clientId);
+          localStorage.setItem("clientName", userData.name || "");
+          localStorage.setItem("clientPackage", userData.package || "");
 
           window.location.href = "dashboard.html";
         }
-        else if(data.status !== "active"){
+        else if(userData.status !== "active"){
           errorBox.innerText = "Account is inactive. Please contact admin.";
           errorBox.style.display = "block";
         }
         else{
-          errorBox.innerText = "Invalid Client ID or Password.";
+          errorBox.innerText = "Invalid Username ID or Password.";
           errorBox.style.display = "block";
         }
 
