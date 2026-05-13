@@ -35,6 +35,7 @@
     .eye-btn{width:34px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#111827;color:#94a3b8;cursor:pointer}
     .eye-btn svg{width:17px;height:17px;stroke:#94a3b8}
     .mini-signal{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(17,24,39,.85);border:1px solid rgba(255,255,255,.06);font-size:12px;font-weight:bold;color:#94a3b8}
+    .demo-badge{display:none;align-items:center;justify-content:center;padding:8px 10px;border-radius:999px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:12px;font-weight:bold;letter-spacing:.4px}
     .dot{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,.9);animation:pulse 1.5s infinite}
     .dot.connected{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9)}
     .dot.pause{background:#9ca3af;box-shadow:0 0 10px rgba(156,163,175,.55)}
@@ -76,9 +77,12 @@
   <div class="card">
     <div class="card-title-row">
       <h3>Account Information</h3>
-      <div class="mini-signal">
-        <span class="dot" id="signalDot"></span>
-        <span id="mt5Signal">DISCONNECTED</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <span class="demo-badge" id="demoBadge">DEMO MODE</span>
+        <div class="mini-signal">
+          <span class="dot" id="signalDot"></span>
+          <span id="mt5Signal">DISCONNECTED</span>
+        </div>
       </div>
     </div>
 
@@ -165,6 +169,12 @@
 
   document.getElementById("clientIdView").innerText = clientId;
   document.getElementById("activityClient").innerText = clientId;
+
+  const isDemo = localStorage.getItem("isDemo") === "true";
+  const demoBadge = document.getElementById("demoBadge");
+  if(demoBadge && isDemo){
+    demoBadge.style.display = "inline-flex";
+  }
 
   const profileRef = ref(db,"TradeLink/clients/"+clientId+"/profile");
   const monitorRef = ref(db,"TradeLink/clients/"+clientId+"/monitor");
