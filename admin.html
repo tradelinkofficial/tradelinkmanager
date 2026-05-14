@@ -82,8 +82,13 @@
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
     @keyframes spin{to{transform:rotate(360deg)}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.summary-grid,.admin-row,.form-grid{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.card-title-row{align-items:flex-start}}
+
+    .permission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .permission-item{display:flex;align-items:center;gap:9px;background:#111827;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:11px 12px;color:#cbd5e1;font-size:12px;font-weight:bold}
+    .permission-item input{width:16px;height:16px;accent-color:#3b82f6}
+    .admin-only-note{margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d;font-size:12px;line-height:1.5}
+    @media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.permission-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.summary-grid,.admin-row,.form-grid,.permission-grid{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.card-title-row{align-items:flex-start}}
   </style>
 </head>
 
@@ -125,6 +130,66 @@
     <div class="summary-card"><span>Active Clients</span><strong id="activeClients" class="status-green">0</strong></div>
     <div class="summary-card"><span>PRO Clients</span><strong id="proClients" class="status-blue">0</strong></div>
     <div class="summary-card"><span>Demo Accounts</span><strong id="demoAccounts" class="status-orange">0</strong></div>
+  </div>
+
+  <div class="card" id="addAdminCard" style="display:none;">
+    <div class="card-title-row">
+      <h3>Add New Admin</h3>
+      <span class="badge badge-orange">SUPER ADMIN ONLY</span>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Admin ID</label>
+        <input type="text" id="newAdminId" placeholder="Example: ADMIN003" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Admin Name</label>
+        <input type="text" id="newAdminName" placeholder="Admin name" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Password</label>
+        <input type="text" id="newAdminPassword" placeholder="Example: 123456" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label>Role</label>
+        <select id="newAdminRole" onchange="applyDefaultAdminPermissions()">
+          <option value="admin">admin</option>
+          <option value="super_admin">super_admin</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="newAdminStatus">
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="admin-only-note">
+      Permission checklist akan disimpan ke TradeLink/admins/{adminId}/permissions. Hanya super_admin boleh create admin baru.
+    </div>
+
+    <div class="permission-grid" id="adminPermissionGrid">
+      <label class="permission-item"><input type="checkbox" data-permission="canCreateClient" /> canCreateClient</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canEditClient" /> canEditClient</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canResetClientPassword" /> canResetClientPassword</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canDisableClient" /> canDisableClient</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canArchiveClient" /> canArchiveClient</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canResetDevice" /> canResetDevice</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canEditLicense" /> canEditLicense</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canEditPackage" /> canEditPackage</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canViewMonitor" /> canViewMonitor</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canCreateAdmin" /> canCreateAdmin</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canEditAdmin" /> canEditAdmin</label>
+      <label class="permission-item"><input type="checkbox" data-permission="canDisableAdmin" /> canDisableAdmin</label>
+    </div>
+
+    <div class="form-actions">
+      <button class="secondary-btn" onclick="clearCreateAdminForm()">Clear Form</button>
+      <button class="primary-btn" id="createAdminBtn" onclick="createNewAdmin()">Create Admin</button>
+    </div>
   </div>
 
 
@@ -320,10 +385,13 @@
   let latestUsers = {};
   let latestClients = {};
   let editingClientId = "";
+  let currentAdminRole = localStorage.getItem("adminRole") || "";
 
   function clearAdminSession(){
     localStorage.removeItem("adminId");
+    localStorage.removeItem("adminName");
     localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminStatus");
     localStorage.removeItem("adminSessionToken");
   }
 
@@ -384,6 +452,171 @@
     return value;
   }
 
+
+  function isSuperAdmin(){
+    return currentAdminRole === "super_admin" || localStorage.getItem("adminRole") === "super_admin";
+  }
+
+  function applyAdminRoleVisibility(){
+    const addAdminCard = document.getElementById("addAdminCard");
+    if(addAdminCard){
+      addAdminCard.style.display = isSuperAdmin() ? "block" : "none";
+    }
+    if(isSuperAdmin()){
+      applyDefaultAdminPermissions();
+    }
+  }
+
+  function getAdminPermissionKeys(){
+    return [
+      "canCreateClient",
+      "canEditClient",
+      "canResetClientPassword",
+      "canDisableClient",
+      "canArchiveClient",
+      "canResetDevice",
+      "canEditLicense",
+      "canEditPackage",
+      "canViewMonitor",
+      "canCreateAdmin",
+      "canEditAdmin",
+      "canDisableAdmin"
+    ];
+  }
+
+  function getDefaultPermissionsByRole(role){
+    const permissions = {};
+    getAdminPermissionKeys().forEach(key => permissions[key] = false);
+
+    if(role === "admin"){
+      permissions.canCreateClient = true;
+      permissions.canEditClient = true;
+      permissions.canResetClientPassword = true;
+      permissions.canDisableClient = true;
+      permissions.canArchiveClient = true;
+      permissions.canResetDevice = true;
+      permissions.canEditLicense = true;
+      permissions.canEditPackage = true;
+      permissions.canViewMonitor = true;
+    }
+
+    if(role === "super_admin"){
+      getAdminPermissionKeys().forEach(key => permissions[key] = true);
+    }
+
+    return permissions;
+  }
+
+  window.applyDefaultAdminPermissions = function(){
+    const role = getInputValue("newAdminRole") || "admin";
+    const defaults = getDefaultPermissionsByRole(role);
+    document.querySelectorAll("#adminPermissionGrid input[data-permission]").forEach(input => {
+      input.checked = defaults[input.dataset.permission] === true;
+    });
+  };
+
+  function getSelectedAdminPermissions(){
+    const permissions = {};
+    getAdminPermissionKeys().forEach(key => permissions[key] = false);
+    document.querySelectorAll("#adminPermissionGrid input[data-permission]").forEach(input => {
+      permissions[input.dataset.permission] = input.checked === true;
+    });
+    return permissions;
+  }
+
+  function setCreateAdminLoading(isLoading){
+    const btn = document.getElementById("createAdminBtn");
+    if(!btn) return;
+    btn.disabled = isLoading;
+    btn.innerText = isLoading ? "CREATING..." : "Create Admin";
+  }
+
+  window.clearCreateAdminForm = function(){
+    const ids = ["newAdminId","newAdminName","newAdminPassword"];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = "";
+    });
+    const roleEl = document.getElementById("newAdminRole");
+    const statusEl = document.getElementById("newAdminStatus");
+    if(roleEl) roleEl.value = "admin";
+    if(statusEl) statusEl.value = "active";
+    applyDefaultAdminPermissions();
+  };
+
+  window.createNewAdmin = async function(){
+    if(!isSuperAdmin()){
+      showToast("Only super_admin can create admin.");
+      return;
+    }
+
+    const newAdminId = getInputValue("newAdminId").toUpperCase();
+    const newAdminName = getInputValue("newAdminName");
+    const newAdminPassword = getInputValue("newAdminPassword");
+    const newAdminRole = getInputValue("newAdminRole");
+    const newAdminStatus = getInputValue("newAdminStatus");
+
+    if(!newAdminId){
+      showToast("Admin ID cannot be empty.");
+      return;
+    }
+    if(!/^[A-Z0-9_-]+$/.test(newAdminId)){
+      showToast("Admin ID only supports letters, numbers, underscore, and dash.");
+      return;
+    }
+    if(!newAdminName){
+      showToast("Admin Name cannot be empty.");
+      return;
+    }
+    if(!newAdminPassword){
+      showToast("Password cannot be empty.");
+      return;
+    }
+    if(!["admin","super_admin"].includes(newAdminRole)){
+      showToast("Invalid admin role.");
+      return;
+    }
+    if(!["active","inactive"].includes(newAdminStatus)){
+      showToast("Invalid admin status.");
+      return;
+    }
+
+    setCreateAdminLoading(true);
+
+    try{
+      const newAdminRef = ref(db,"TradeLink/admins/" + newAdminId);
+      const existingAdmin = await get(newAdminRef);
+
+      if(existingAdmin.exists()){
+        showToast("Admin ID already exists.");
+        return;
+      }
+
+      const nowDate = todayDate();
+      const adminPayload = {
+        adminId:newAdminId,
+        name:newAdminName,
+        password:newAdminPassword,
+        role:newAdminRole,
+        status:newAdminStatus,
+        sessionToken:"",
+        createdAt:nowDate,
+        updatedAt:"",
+        lastLogin:"",
+        permissions:getSelectedAdminPermissions()
+      };
+
+      await set(newAdminRef,adminPayload);
+      clearCreateAdminForm();
+      showToast("Admin " + newAdminId + " created successfully.");
+    }catch(error){
+      console.error(error);
+      showToast("Failed to create admin. Check Firebase rules.");
+    }finally{
+      setCreateAdminLoading(false);
+    }
+  };
+
   async function validateAdminAccess(){
     if(!adminId || !adminSessionToken){
       redirectLogin();
@@ -412,8 +645,10 @@
       }
 
       localStorage.setItem("adminRole",adminData.role || "admin");
+      currentAdminRole = adminData.role || "admin";
       renderAdmin(adminData);
       enableAdminShell();
+      applyAdminRoleVisibility();
       watchAdminSession();
       watchRealtimeClients();
 
@@ -443,7 +678,12 @@
       if(!data || !["admin", "super_admin"].includes(data.role) || data.status !== "active" || data.sessionToken !== currentToken){
         showToast("Admin session expired.");
         setTimeout(redirectLogin,700);
+        return;
       }
+
+      currentAdminRole = data.role || "admin";
+      localStorage.setItem("adminRole",currentAdminRole);
+      applyAdminRoleVisibility();
     });
   }
 
