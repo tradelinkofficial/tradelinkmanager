@@ -309,8 +309,8 @@
     }
 
     window.adminLogin = async function(){
-      const adminId = document.getElementById("adminId").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const adminId = document.getElementById("adminId").value.trim().toUpperCase();
+      const password = document.getElementById("password").value;
 
       clearError();
 
