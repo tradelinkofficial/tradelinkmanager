@@ -10,9 +10,57 @@
 html[data-theme="light"]{--bg:#eef4fb;--bg2:#dbeafe;--panel:rgba(255,255,255,.88);--panel2:rgba(248,250,252,.88);--border:rgba(15,23,42,.11);--text:#0f172a;--muted:#475569;--shadow:rgba(15,23,42,.14);--soft:rgba(15,23,42,.045);--track:rgba(15,23,42,.11);--logoGlow:rgba(59,130,246,.20)}
 body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 20% 0%,rgba(59,130,246,.18),transparent 32%),radial-gradient(circle at 88% 22%,rgba(6,182,212,.12),transparent 28%),linear-gradient(160deg,var(--bg),var(--bg2));padding:12px;transition:.25s}
 .app{max-width:960px;margin:0 auto;padding-bottom:86px}
-.hero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 2px 15px;border-bottom:1px solid var(--border)}
+.hero{display:flex;align-items:center;justify-content:center;padding:12px 2px 15px;border-bottom:1px solid var(--border)}
 .logo-img{width:210px;max-width:42vw;height:auto;object-fit:contain;filter:drop-shadow(0 0 20px var(--logoGlow))}
-.motto{font-size:12px;letter-spacing:2.6px;color:var(--muted);font-weight:800;text-transform:uppercase;white-space:nowrap;text-align:right}
+
+.hero-center{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+gap:4px;
+width:100%;
+}
+
+.logo-img{
+width:420px;
+max-width:92vw;
+height:auto;
+object-fit:contain;
+filter:drop-shadow(0 0 24px rgba(59,130,246,.30));
+}
+
+.motto-bottom{
+font-size:10px;
+letter-spacing:3px;
+color:var(--muted);
+font-weight:700;
+text-transform:uppercase;
+margin-top:-2px;
+}
+
+@media(max-width:720px){
+.logo-img{
+width:320px;
+max-width:88vw;
+}
+.motto-bottom{
+font-size:8px;
+letter-spacing:2px;
+}
+}
+
+@media(max-width:430px){
+.logo-img{
+width:270px;
+max-width:86vw;
+}
+.motto-bottom{
+font-size:7px;
+letter-spacing:1.5px;
+}
+}
+
 .client-row{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border-radius:24px;border:1px solid var(--border);background:var(--panel);box-shadow:0 14px 34px var(--shadow);backdrop-filter:blur(16px)}
 .client-row .left,.client-row .right{font-size:14px;color:var(--muted)}.client-row strong{color:var(--text)}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#334155,#64748b);display:inline-flex;align-items:center;justify-content:center;margin-left:8px;color:#e2e8f0;font-weight:900}
@@ -51,10 +99,14 @@ body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 20%
 </head>
 <body>
 <div class="app">
+
 <header class="hero">
-  <div><img src="tradelink_logo_transparent.png" class="logo-img" alt="TradeLink Manager"></div>
-  <div class="motto">CONNECT • MONITOR • CONTROL • PROFIT</div>
+  <div class="hero-center">
+    <img src="tradelink_logo_horizontal_premium.png" class="logo-img" alt="TradeLink Manager">
+    <div class="motto-bottom">CONNECT • MONITOR • CONTROL • PROFIT</div>
+  </div>
 </header>
+
 
 <section class="client-row">
   <div class="left">Client: <strong id="clientNameText">-</strong><span id="demoBadge" class="demo-badge">DEMO</span></div>
