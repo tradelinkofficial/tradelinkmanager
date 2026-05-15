@@ -285,8 +285,61 @@
       currentAdminData=data; currentRole=data.role; currentPermissions=normalizePermissions(currentRole,data.permissions||{}); localStorage.setItem("adminRole",currentRole); renderAdmin(data); applyRoleUI(); renderClientList(); renderAdminList();
     });
   }
-  function watchRealtimeAdmins(){ if(!isSuperAdmin()) return; onValue(ref(db,"TradeLink/admins"),(snap)=>{ latestAdmins=snap.val()||{}; console.log("ADMINS SNAPSHOT", latestAdmins); renderAdminList(); }); }
-  function watchRealtimeClients(){ onValue(ref(db,"TradeLink/users"),(snap)=>{ latestUsers=snap.val()||{}; console.log("USERS SNAPSHOT", latestUsers); renderClientList(); }); onValue(ref(db,"TradeLink/clients"),(snap)=>{ latestClients=snap.val()||{}; console.log("CLIENTS SNAPSHOT", latestClients); renderClientList(); }); }
+
+  function showAdminListError(error){
+    console.error("ADMINS LIST ERROR", error);
+    const tbody=document.getElementById("adminTableBody");
+    if(tbody) tbody.innerHTML=`<tr><td colspan="7" class="empty">Unable to load admins. Check Firebase Rules read permission for TradeLink/admins. ${escapeHtml(error && error.message ? error.message : "")}</td></tr>`;
+    setText("totalAdmins","0");
+    showToast("Admin list blocked. Check Firebase rules.");
+  }
+
+  function showClientListError(source,error){
+    console.error(source + " LIST ERROR", error);
+    const tbody=document.getElementById("clientTableBody");
+    if(tbody) tbody.innerHTML=`<tr><td colspan="14" class="empty">Unable to load client list from ${escapeHtml(source)}. Check Firebase Rules read permission for TradeLink/users and TradeLink/clients. ${escapeHtml(error && error.message ? error.message : "")}</td></tr>`;
+    updateSummary(0,0,0,0,0,0,0,0);
+    showToast("Client list blocked. Check Firebase rules.");
+  }
+
+
+  function watchRealtimeAdmins(){
+    if(!isSuperAdmin()){
+      const tbody=document.getElementById("adminTableBody");
+      if(tbody) tbody.innerHTML=`<tr><td colspan="7" class="empty">Admin Management is visible for SUPER ADMIN only.</td></tr>`;
+      return;
+    }
+    onValue(
+      ref(db,"TradeLink/admins"),
+      (snap)=>{
+        latestAdmins=snap.val()||{};
+        console.log("ADMINS SNAPSHOT", latestAdmins);
+        renderAdminList();
+      },
+      (error)=>showAdminListError(error)
+    );
+  }
+  function watchRealtimeClients(){
+    onValue(
+      ref(db,"TradeLink/users"),
+      (snap)=>{
+        latestUsers=snap.val()||{};
+        console.log("USERS SNAPSHOT", latestUsers);
+        renderClientList();
+      },
+      (error)=>showClientListError("USERS",error)
+    );
+
+    onValue(
+      ref(db,"TradeLink/clients"),
+      (snap)=>{
+        latestClients=snap.val()||{};
+        console.log("CLIENTS SNAPSHOT", latestClients);
+        renderClientList();
+      },
+      (error)=>showClientListError("CLIENTS",error)
+    );
+  }
 
   window.applyCreateAdminRolePreset = function(){ const role=getInputValue("newAdminRole"); const perms=role==="super_admin" ? superPermissions() : defaultAdminPermissions(); setPermissionGrid("createAdminPerm",perms,role==="super_admin"); };
   window.applyEditAdminRolePreset = function(){ const role=getInputValue("editAdminRole"); if(role==="super_admin") setPermissionGrid("editAdminPerm",superPermissions(),true); else setPermissionGrid("editAdminPerm",readPermissionGrid("editAdminPerm"),false); };
