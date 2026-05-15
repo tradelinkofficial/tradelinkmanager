@@ -59,7 +59,11 @@
     @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:1000px){.summary-grid{grid-template-columns:repeat(2,1fr)}.admin-row{grid-template-columns:repeat(2,1fr)}.form-grid,.permission-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:560px){body{padding:14px}.brand h1{font-size:21px}.summary-grid,.admin-row,.form-grid,.form-grid.two,.permission-grid{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.card-title-row{align-items:flex-start}}
-  </style>
+  /* TradeLink Manager Better Mobile UX Patch v1.02 */
+@media(max-width:768px){body{padding:12px!important}.container{max-width:100%!important}.topbar{align-items:flex-start!important}.brand h1{font-size:20px!important}.brand p{font-size:12px!important}.nav{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}.nav a,.nav button{width:100%!important;min-height:44px!important}.card{padding:15px!important;border-radius:18px!important;margin-bottom:12px!important}.row{padding:12px 0!important;font-size:14px!important}.quick-grid,.bottom-grid,.summary-grid,.admin-row,.form-grid,.permission-grid,.analytics-metrics{grid-template-columns:1fr!important;gap:12px!important}table{min-width:980px!important}.table-wrap{border-radius:16px!important}.actions{display:grid!important;grid-template-columns:1fr!important}.small-btn,.primary-btn,.secondary-btn,.danger-btn{min-height:42px!important;width:100%!important}.modal-box{max-height:94vh!important;border-radius:20px!important;padding:16px!important}canvas{min-height:240px!important}}
+@media(max-width:380px){.nav{grid-template-columns:1fr!important}.brand h1{font-size:18px!important}.value,.balance-value{font-size:22px!important}}
+
+</style>
 </head>
 <body>
 <div class="loading" id="loadingScreen"><div class="loading-box"><div class="spinner"></div><h2>Validating Admin Access</h2><p>Please wait while TradeLink Manager checks your admin session.</p></div></div>
@@ -168,7 +172,6 @@
     <button class="secondary-btn" onclick="quickExtendClientLicense(30)">Extend 30 Days</button>
     <button class="secondary-btn" onclick="quickExtendClientLicense(90)">Extend 90 Days</button>
     <button class="danger-btn" onclick="resetClientBindingFromModal()">Reset Binding</button>
-    <button class="secondary-btn" onclick="bindLatestMT5AccountFromModal()">Bind Account</button>
     <button class="secondary-btn" onclick="closeEditClientModal()">Cancel</button>
     <button class="primary-btn" id="saveEditClientBtn" onclick="saveEditClientChanges()">Save Changes</button>
   </div>
@@ -232,10 +235,23 @@
 
   function formatCurrency(amount, monitor={}){ const symbol=monitor.currency_symbol || (String(monitor.account_currency||"").toUpperCase()==="USD" ? "$" : ""); const value=money(amount); if(symbol==="$") return "$"+value; if(symbol==="RM") return "RM "+value; if(symbol) return symbol+" "+value; return value; }
   function todayDate(){ const d=new Date(); const pad=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
-  function timestampNow(){ return new Date().toISOString(); }
-  function toOfficialClientId(value){ const raw=String(value||"").trim().toUpperCase(); const m=raw.match(/^TL-?(\d{4})$/); return m ? "TL-" + m[1] : raw; }
-  function getOfficialClientRecord(clientId){ const officialId=toOfficialClientId(clientId); return {officialId, user:(latestUsers[officialId]||latestUsers[clientId]||{}), client:(latestClients[officialId]||latestClients[clientId]||{})}; }
   function getInputValue(id){ const el=document.getElementById(id); return el ? el.value.trim() : ""; }
+
+  function normalizeClientId(clientId){
+    const raw = String(clientId || "").trim().toUpperCase();
+    const m = raw.match(/^TL-?(\d+)$/);
+    if(m) return "TL-" + m[1].padStart(4,"0");
+    return raw;
+  }
+  function nowStamp(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    return d.getFullYear()+"."+pad(d.getMonth()+1)+"."+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  function getClientSnapshotData(clientId){
+    const officialId = normalizeClientId(clientId);
+    return latestClients[officialId] || latestClients[clientId] || {};
+  }
 
   function renderPermissionGrid(targetId, prefix, permissions){
     const box = document.getElementById(targetId); if(!box) return;
@@ -285,8 +301,61 @@
       currentAdminData=data; currentRole=data.role; currentPermissions=normalizePermissions(currentRole,data.permissions||{}); localStorage.setItem("adminRole",currentRole); renderAdmin(data); applyRoleUI(); renderClientList(); renderAdminList();
     });
   }
-  function watchRealtimeAdmins(){ if(!isSuperAdmin()) return; onValue(ref(db,"TradeLink/admins"),(snap)=>{ latestAdmins=snap.val()||{}; console.log("ADMINS SNAPSHOT", latestAdmins); renderAdminList(); }); }
-  function watchRealtimeClients(){ onValue(ref(db,"TradeLink/users"),(snap)=>{ latestUsers=snap.val()||{}; console.log("USERS SNAPSHOT", latestUsers); renderClientList(); }); onValue(ref(db,"TradeLink/clients"),(snap)=>{ latestClients=snap.val()||{}; console.log("CLIENTS SNAPSHOT", latestClients); renderClientList(); }); }
+
+  function showAdminListError(error){
+    console.error("ADMINS LIST ERROR", error);
+    const tbody=document.getElementById("adminTableBody");
+    if(tbody) tbody.innerHTML=`<tr><td colspan="7" class="empty">Unable to load admins. Check Firebase Rules read permission for TradeLink/admins. ${escapeHtml(error && error.message ? error.message : "")}</td></tr>`;
+    setText("totalAdmins","0");
+    showToast("Admin list blocked. Check Firebase rules.");
+  }
+
+  function showClientListError(source,error){
+    console.error(source + " LIST ERROR", error);
+    const tbody=document.getElementById("clientTableBody");
+    if(tbody) tbody.innerHTML=`<tr><td colspan="14" class="empty">Unable to load client list from ${escapeHtml(source)}. Check Firebase Rules read permission for TradeLink/users and TradeLink/clients. ${escapeHtml(error && error.message ? error.message : "")}</td></tr>`;
+    updateSummary(0,0,0,0,0,0,0,0);
+    showToast("Client list blocked. Check Firebase rules.");
+  }
+
+
+  function watchRealtimeAdmins(){
+    if(!isSuperAdmin()){
+      const tbody=document.getElementById("adminTableBody");
+      if(tbody) tbody.innerHTML=`<tr><td colspan="7" class="empty">Admin Management is visible for SUPER ADMIN only.</td></tr>`;
+      return;
+    }
+    onValue(
+      ref(db,"TradeLink/admins"),
+      (snap)=>{
+        latestAdmins=snap.val()||{};
+        console.log("ADMINS SNAPSHOT", latestAdmins);
+        renderAdminList();
+      },
+      (error)=>showAdminListError(error)
+    );
+  }
+  function watchRealtimeClients(){
+    onValue(
+      ref(db,"TradeLink/users"),
+      (snap)=>{
+        latestUsers=snap.val()||{};
+        console.log("USERS SNAPSHOT", latestUsers);
+        renderClientList();
+      },
+      (error)=>showClientListError("USERS",error)
+    );
+
+    onValue(
+      ref(db,"TradeLink/clients"),
+      (snap)=>{
+        latestClients=snap.val()||{};
+        console.log("CLIENTS SNAPSHOT", latestClients);
+        renderClientList();
+      },
+      (error)=>showClientListError("CLIENTS",error)
+    );
+  }
 
   window.applyCreateAdminRolePreset = function(){ const role=getInputValue("newAdminRole"); const perms=role==="super_admin" ? superPermissions() : defaultAdminPermissions(); setPermissionGrid("createAdminPerm",perms,role==="super_admin"); };
   window.applyEditAdminRolePreset = function(){ const role=getInputValue("editAdminRole"); if(role==="super_admin") setPermissionGrid("editAdminPerm",superPermissions(),true); else setPermissionGrid("editAdminPerm",readPermissionGrid("editAdminPerm"),false); };
@@ -338,9 +407,10 @@
       const editBtn=hasPermission("canEditClient")?`<button class="small-btn" onclick="openEditClientModal('${escapeHtml(clientId)}')">Edit</button>`:"";
       const resetPassBtn=hasPermission("canResetClientPassword")?`<button class="small-btn" onclick="resetClientPassword('${escapeHtml(clientId)}')">Reset Password</button>`:"";
       const disableBtn=hasPermission("canDisableClient")?`<button class="small-btn ${String(status).toLowerCase()==='active'?'red-small':'green-small'}" onclick="toggleClientStatus('${escapeHtml(clientId)}')">${String(status).toLowerCase()==='active'?'Disable':'Enable'}</button>`:"";
-      const resetDeviceBtn=hasPermission("canResetDevice")?`<button class="small-btn" onclick="resetClientBinding('${escapeHtml(clientId)}')">Reset Binding</button><button class="small-btn green-small" onclick="bindLatestMT5Account('${escapeHtml(clientId)}')">Bind Account</button>`:"";
+      const bindAccountBtn=(hasPermission("canEditLicense")||hasPermission("canResetDevice"))?`<button class="small-btn green-small" onclick="bindClientAccount('${escapeHtml(clientId)}')">Bind Account</button>`:"";
+      const resetDeviceBtn=hasPermission("canResetDevice")?`<button class="small-btn" onclick="resetClientBinding('${escapeHtml(clientId)}')">Reset Binding</button>`:"";
       const archiveBtn=hasPermission("canArchiveClient")?`<button class="small-btn red-small" onclick="archiveClient('${escapeHtml(clientId)}')">Archive</button>`:"";
-      return `<tr><td><span class="client-id">${escapeHtml(clientId)}</span></td><td>${escapeHtml(name)}</td><td>${packageBadge(pkg)}</td><td>${statusBadge(status)}</td><td>${modeBadge(isDemo)}</td><td>${hasPermission("canViewMonitor")?eaBadge(monitor.mt5_signal):badge("LOCKED","grey")}</td><td><span class="money">${hasPermission("canViewMonitor")?escapeHtml(formatCurrency(monitor.balance,monitor)):"-"}</span></td><td><span class="money ${floatingClass}">${hasPermission("canViewMonitor")?escapeHtml(formatCurrency(floating,monitor)):"-"}</span></td><td>${licenseStatusBadge(license)}</td><td>${deviceBindingBadge(license)}<br><span class="muted">${escapeHtml(deviceBindingText(license))}</span></td><td><span class="${remaining.cls}">${escapeHtml(remaining.text)}</span></td><td>${escapeHtml(license.expiryDate||"-")}</td><td><span class="muted">${escapeHtml(monitor.last_update||"-")}</span></td><td><div class="actions"><button class="small-btn" onclick="viewClient('${escapeHtml(clientId)}')">View</button>${editBtn}${resetPassBtn}${disableBtn}${resetDeviceBtn}${archiveBtn}</div></td></tr>`;
+      return `<tr><td><span class="client-id">${escapeHtml(clientId)}</span></td><td>${escapeHtml(name)}</td><td>${packageBadge(pkg)}</td><td>${statusBadge(status)}</td><td>${modeBadge(isDemo)}</td><td>${hasPermission("canViewMonitor")?eaBadge(monitor.mt5_signal):badge("LOCKED","grey")}</td><td><span class="money">${hasPermission("canViewMonitor")?escapeHtml(formatCurrency(monitor.balance,monitor)):"-"}</span></td><td><span class="money ${floatingClass}">${hasPermission("canViewMonitor")?escapeHtml(formatCurrency(floating,monitor)):"-"}</span></td><td>${licenseStatusBadge(license)}</td><td>${deviceBindingBadge(license)}<br><span class="muted">${escapeHtml(deviceBindingText(license))}</span></td><td><span class="${remaining.cls}">${escapeHtml(remaining.text)}</span></td><td>${escapeHtml(license.expiryDate||"-")}</td><td><span class="muted">${escapeHtml(monitor.last_update||"-")}</span></td><td><div class="actions"><button class="small-btn" onclick="viewClient('${escapeHtml(clientId)}')">View</button>${editBtn}${resetPassBtn}${disableBtn}${bindAccountBtn}${resetDeviceBtn}${archiveBtn}</div></td></tr>`;
     }).join(""); updateSummary(ids.length,active,pro,demo,activeLic,expiredLic,lockedDev,noExpiry);
   }
   function updateSummary(total,active,pro,demo,activeLic=0,expiredLic=0,lockedDev=0,noExpiry=0){ setText("totalClients",total); setText("activeClients",active); setText("proClients",pro); setText("demoAccounts",demo); setText("activeLicenses",activeLic); setText("expiredLicenses",expiredLic); setText("lockedDevices",lockedDev); setText("noExpiryLicenses",noExpiry); }
@@ -348,22 +418,117 @@
   window.clearCreateClientForm = function(){ ["newClientId","newClientName","newClientPassword","newClientExpiry"].forEach(id=>document.getElementById(id).value=""); document.getElementById("newClientPackage").value="BASIC"; document.getElementById("newClientStatus").value="active"; document.getElementById("newClientDemo").value="false"; document.getElementById("newClientDeviceLock").value="false"; };
   function setCreateLoading(v){ const b=document.getElementById("createClientBtn"); b.disabled=v; b.innerText=v?"CREATING...":"Create Client"; }
   function buildNewClientPayload(clientId,name,password,packageValue,statusValue,isDemo,expiryDate,deviceLock){ const createdAt=todayDate(); return { user:{clientId,clientKey:clientId,name,password,package:packageValue,status:statusValue,isDemo,sessionToken:"",passwordUpdatedAt:"",createdAt}, client:{ profile:{clientId,name,package:packageValue,status:statusValue}, monitor:{mt5_signal:"DISCONNECTED",account_login:0,account_name:"",broker:"",server:"",balance:0,equity:0,margin:0,floating_pl:0,profit_today:0,drawdown:0,buy_count:0,sell_count:0,total_trades:0,account_currency:"USD",currency_symbol:"$",active_symbols:"",last_update:""}, command:{close_all:false,close_profit:false,close_loss:false,set_sl:0,set_tp:0,set_be:0,close_low_profit_count:0,close_high_profit_count:0,last_status:"",last_command:"",last_message:"",updatedAt:""}, history:{}, license:{expiryDate,deviceId:"",deviceLock,lastLogin:""}, settings:{allowChangePassword:true,telegramEnabled:false,telegramChatId:"",theme:"DARK_TRADING_PRO"} } }; }
-  window.createNewClient = async function(){ if(!hasPermission("canCreateClient")){ deny(); return; } const clientId=toOfficialClientId(getInputValue("newClientId")); const name=getInputValue("newClientName"); const password=getInputValue("newClientPassword"); const pkg=getInputValue("newClientPackage").toUpperCase(); const status=getInputValue("newClientStatus").toLowerCase(); const isDemo=getInputValue("newClientDemo")==="true"; const expiry=getInputValue("newClientExpiry"); const lock=getInputValue("newClientDeviceLock")==="true"; if(!clientId||!name||!password||!pkg||!status){ showToast("Please complete required client fields."); return; } if(!/^[A-Z0-9_-]+$/.test(clientId)){ showToast("Client ID only supports letters, numbers, underscore, and dash."); return; } if(!["BASIC","PRO"].includes(pkg)){ showToast("Invalid package value."); return; } if(!["active","inactive"].includes(status)){ showToast("Invalid status value."); return; } setCreateLoading(true); try{ const [u,c]=await Promise.all([get(ref(db,"TradeLink/users/"+clientId)),get(ref(db,"TradeLink/clients/"+clientId))]); if(u.exists()||c.exists()){ showToast("Client ID already exists."); return; } const payload=buildNewClientPayload(clientId,name,password,pkg,status,isDemo,expiry,lock); await update(ref(db,"TradeLink"),{["users/"+clientId]:payload.user,["clients/"+clientId]:payload.client}); clearCreateClientForm(); showToast("Client " + clientId + " created successfully."); }catch(e){ console.error(e); showToast("Failed to create client. Check Firebase rules."); }finally{ setCreateLoading(false); } };
+  window.createNewClient = async function(){ if(!hasPermission("canCreateClient")){ deny(); return; } const clientId=normalizeClientId(getInputValue("newClientId")); const name=getInputValue("newClientName"); const password=getInputValue("newClientPassword"); const pkg=getInputValue("newClientPackage").toUpperCase(); const status=getInputValue("newClientStatus").toLowerCase(); const isDemo=getInputValue("newClientDemo")==="true"; const expiry=getInputValue("newClientExpiry"); const lock=getInputValue("newClientDeviceLock")==="true"; if(!clientId||!name||!password||!pkg||!status){ showToast("Please complete required client fields."); return; } if(!/^[A-Z0-9_-]+$/.test(clientId)){ showToast("Client ID only supports letters, numbers, underscore, and dash."); return; } if(!["BASIC","PRO"].includes(pkg)){ showToast("Invalid package value."); return; } if(!["active","inactive"].includes(status)){ showToast("Invalid status value."); return; } setCreateLoading(true); try{ const [u,c]=await Promise.all([get(ref(db,"TradeLink/users/"+clientId)),get(ref(db,"TradeLink/clients/"+clientId))]); if(u.exists()||c.exists()){ showToast("Client ID already exists."); return; } const payload=buildNewClientPayload(clientId,name,password,pkg,status,isDemo,expiry,lock); await update(ref(db,"TradeLink"),{["users/"+clientId]:payload.user,["clients/"+clientId]:payload.client}); clearCreateClientForm(); showToast("Client " + clientId + " created successfully."); }catch(e){ console.error(e); showToast("Failed to create client. Check Firebase rules."); }finally{ setCreateLoading(false); } };
 
   function setEditLoading(v){ const b=document.getElementById("saveEditClientBtn"); b.disabled=v; b.innerText=v?"SAVING...":"Save Changes"; }
   window.openEditClientModal = async function(clientId){ if(!hasPermission("canEditClient")){ deny(); return; } editingClientId=clientId; document.getElementById("editClientIdView").innerText=clientId; document.getElementById("editClientModal").style.display="flex"; setEditLoading(true); try{ const [userSnap,profileSnap,licenseSnap,settingsSnap]=await Promise.all([get(ref(db,"TradeLink/users/"+clientId)),get(ref(db,"TradeLink/clients/"+clientId+"/profile")),get(ref(db,"TradeLink/clients/"+clientId+"/license")),get(ref(db,"TradeLink/clients/"+clientId+"/settings"))]); const user=userSnap.val()||{}, profile=profileSnap.val()||{}, license=licenseSnap.val()||{}, settings=settingsSnap.val()||{}; document.getElementById("editClientName").value=profile.name||user.name||user.clientName||""; document.getElementById("editClientPackage").value=String(profile.package||user.package||"BASIC").toUpperCase()==="PRO"?"PRO":"BASIC"; document.getElementById("editClientStatus").value=String(profile.status||user.status||"active").toLowerCase()==="inactive"?"inactive":"active"; document.getElementById("editClientDemo").value=user.isDemo===true?"true":"false"; document.getElementById("editClientExpiry").value=license.expiryDate||""; document.getElementById("editClientDeviceLock").value=license.deviceLock===true?"true":"false"; document.getElementById("editAllowChangePassword").value=settings.allowChangePassword===false?"false":"true"; document.getElementById("editTelegramEnabled").value=settings.telegramEnabled===true?"true":"false"; document.getElementById("editTelegramChatId").value=settings.telegramChatId||""; document.getElementById("editClientPackage").disabled=!hasPermission("canEditPackage"); document.getElementById("editClientExpiry").disabled=!hasPermission("canEditLicense"); document.getElementById("editClientDeviceLock").disabled=!hasPermission("canEditLicense"); }catch(e){ console.error(e); showToast("Failed to load client data."); closeEditClientModal(); }finally{ setEditLoading(false); } };
   window.closeEditClientModal = function(){ editingClientId=""; document.getElementById("editClientModal").style.display="none"; setEditLoading(false); };
   window.saveEditClientChanges = async function(){ if(!hasPermission("canEditClient")){ deny(); return; } const clientId=editingClientId; if(!clientId){ showToast("No client selected."); return; } const name=getInputValue("editClientName"); const pkg=getInputValue("editClientPackage").toUpperCase(); const status=getInputValue("editClientStatus").toLowerCase(); const isDemo=getInputValue("editClientDemo")==="true"; const expiry=getInputValue("editClientExpiry"); const lock=getInputValue("editClientDeviceLock")==="true"; const allow=getInputValue("editAllowChangePassword")==="true"; const tele=getInputValue("editTelegramEnabled")==="true"; const chat=getInputValue("editTelegramChatId"); if(!name){ showToast("Client Name cannot be empty."); return; } if(!["BASIC","PRO"].includes(pkg)){ showToast("Invalid package value."); return; } if(!["active","inactive"].includes(status)){ showToast("Invalid status value."); return; } setEditLoading(true); try{ const updates={ ["users/"+clientId+"/name"]:name,["users/"+clientId+"/status"]:status,["users/"+clientId+"/isDemo"]:isDemo,["clients/"+clientId+"/profile/name"]:name,["clients/"+clientId+"/profile/status"]:status,["clients/"+clientId+"/settings/allowChangePassword"]:allow,["clients/"+clientId+"/settings/telegramEnabled"]:tele,["clients/"+clientId+"/settings/telegramChatId"]:chat}; if(hasPermission("canEditPackage")){ updates["users/"+clientId+"/package"]=pkg; updates["clients/"+clientId+"/profile/package"]=pkg; } if(hasPermission("canEditLicense")){ updates["clients/"+clientId+"/license/expiryDate"]=expiry; updates["clients/"+clientId+"/license/deviceLock"]=lock; } await update(ref(db,"TradeLink"),updates); closeEditClientModal(); showToast("Client " + clientId + " updated successfully."); }catch(e){ console.error(e); showToast("Failed to update client. Check Firebase rules."); }finally{ setEditLoading(false); } };
-  window.viewClient = function(clientId){ const user=latestUsers[clientId]||{}, client=latestClients[clientId]||{}, profile=client.profile||{}, monitor=client.monitor||{}, license=client.license||{}; const licInfo=licenseStatusInfo(license); const remaining=expiryRemainingText(license.expiryDate||""); document.getElementById("viewClientContent").innerHTML=`<div class="admin-row"><div class="mini"><span>Client ID</span><strong>${escapeHtml(clientId)}</strong></div><div class="mini"><span>Name</span><strong>${escapeHtml(profile.name||user.name||user.clientName||clientId||"-")}</strong></div><div class="mini"><span>Package</span><strong>${escapeHtml(profile.package||user.package||"-")}</strong></div><div class="mini"><span>Status</span><strong>${escapeHtml(profile.status||user.status||"-")}</strong></div><div class="mini"><span>EA Status</span><strong>${escapeHtml(monitor.mt5_signal||"-")}</strong></div><div class="mini"><span>Balance</span><strong>${escapeHtml(formatCurrency(monitor.balance,monitor))}</strong></div><div class="mini"><span>Floating P/L</span><strong>${escapeHtml(formatCurrency(monitor.floating_pl,monitor))}</strong></div><div class="mini"><span>Expiry Date</span><strong>${escapeHtml(license.expiryDate||"-")}</strong></div><div class="mini"><span>Expiry Status</span><strong class="status-${licInfo.type}">${escapeHtml(licInfo.label)}</strong></div><div class="mini"><span>Expiry Remaining</span><strong class="${remaining.cls}">${escapeHtml(remaining.text)}</strong></div><div class="mini"><span>Device ID</span><strong>${escapeHtml(license.deviceId||"UNBOUND")}</strong></div><div class="mini"><span>Device Lock</span><strong>${escapeHtml(license.deviceLock===true?"true":"false")}</strong></div><div class="mini"><span>Last Login</span><strong>${escapeHtml(license.lastLogin||"-")}</strong></div><div class="mini"><span>Bound Account Login</span><strong>${escapeHtml(license.account_login||"-")}</strong></div><div class="mini"><span>Bound Broker</span><strong>${escapeHtml(license.broker||"-")}</strong></div><div class="mini"><span>Bound Server</span><strong>${escapeHtml(license.server||"-")}</strong></div></div>`; document.getElementById("viewClientModal").style.display="flex"; };
+  window.viewClient = function(clientId){ const user=latestUsers[clientId]||{}, client=latestClients[clientId]||{}, profile=client.profile||{}, monitor=client.monitor||{}, license=client.license||{}; const licInfo=licenseStatusInfo(license); const remaining=expiryRemainingText(license.expiryDate||""); document.getElementById("viewClientContent").innerHTML=`<div class="admin-row"><div class="mini"><span>Client ID</span><strong>${escapeHtml(clientId)}</strong></div><div class="mini"><span>Name</span><strong>${escapeHtml(profile.name||user.name||user.clientName||clientId||"-")}</strong></div><div class="mini"><span>Package</span><strong>${escapeHtml(profile.package||user.package||"-")}</strong></div><div class="mini"><span>Status</span><strong>${escapeHtml(profile.status||user.status||"-")}</strong></div><div class="mini"><span>EA Status</span><strong>${escapeHtml(monitor.mt5_signal||"-")}</strong></div><div class="mini"><span>Balance</span><strong>${escapeHtml(formatCurrency(monitor.balance,monitor))}</strong></div><div class="mini"><span>Floating P/L</span><strong>${escapeHtml(formatCurrency(monitor.floating_pl,monitor))}</strong></div><div class="mini"><span>Expiry Date</span><strong>${escapeHtml(license.expiryDate||"-")}</strong></div><div class="mini"><span>Expiry Status</span><strong class="status-${licInfo.type}">${escapeHtml(licInfo.label)}</strong></div><div class="mini"><span>Expiry Remaining</span><strong class="${remaining.cls}">${escapeHtml(remaining.text)}</strong></div><div class="mini"><span>Device ID</span><strong>${escapeHtml(license.deviceId||"UNBOUND")}</strong></div><div class="mini"><span>Device Lock</span><strong>${escapeHtml(license.deviceLock===true?"true":"false")}</strong></div><div class="mini"><span>Last Login</span><strong>${escapeHtml(license.lastLogin||"-")}</strong></div></div>`; document.getElementById("viewClientModal").style.display="flex"; };
   window.closeViewClientModal = function(){ document.getElementById("viewClientModal").style.display="none"; };
   window.resetClientPassword = async function(clientId){ if(!hasPermission("canResetClientPassword")){ deny(); return; } const p=prompt("Enter new password for " + clientId + ":"); if(!p) return; try{ await update(ref(db,"TradeLink/users/"+clientId),{password:p,sessionToken:"",passwordUpdatedAt:new Date().toISOString()}); showToast("Client password reset successfully."); }catch(e){ console.error(e); showToast("Failed to reset password."); } };
   window.toggleClientStatus = async function(clientId){ if(!hasPermission("canDisableClient")){ deny(); return; } const user=latestUsers[clientId]||{}, client=latestClients[clientId]||{}, profile=client.profile||{}; const curr=String(profile.status||user.status||"inactive").toLowerCase(); const next=curr==="active"?"inactive":"active"; try{ await update(ref(db,"TradeLink"),{["users/"+clientId+"/status"]:next,["clients/"+clientId+"/profile/status"]:next}); showToast("Client status updated."); }catch(e){ console.error(e); showToast("Failed to update client status."); } };
-  window.resetClientBinding = async function(clientId){ if(!hasPermission("canResetDevice")){ deny(); return; } const officialId=toOfficialClientId(clientId); if(!confirm("Reset account binding for " + officialId + "?")) return; try{ await update(ref(db,"TradeLink/clients/"+officialId+"/license"),{deviceId:"",lastLogin:"",account_login:0,account_name:"",broker:"",server:"",bindingStatus:"UNBOUND",updatedAt:timestampNow()}); showToast("Binding reset at TradeLink/clients/" + officialId + "/license"); }catch(e){ console.error(e); showToast("Failed to reset binding at official client ID path."); } };
+  window.resetClientBinding = async function(clientId){
+    if(!hasPermission("canResetDevice")){ deny(); return; }
+    const officialId = normalizeClientId(clientId);
+    if(!confirm("Reset binding for " + officialId + "?")) return;
+    const stamp = nowStamp();
+
+    const updates = {
+      ["clients/"+officialId+"/license/mt5AccountLogin"]:"",
+      ["clients/"+officialId+"/license/mt5AccountName"]:"",
+      ["clients/"+officialId+"/license/broker"]:"",
+      ["clients/"+officialId+"/license/server"]:"",
+      ["clients/"+officialId+"/license/deviceId"]:"",
+      ["clients/"+officialId+"/license/deviceBindStatus"]:"unbound",
+      ["clients/"+officialId+"/license/lastBindingAt"]:"",
+      ["clients/"+officialId+"/license/lastLogin"]:"",
+      ["clients/"+officialId+"/license/updatedAt"]:stamp,
+
+      ["clients/"+officialId+"/monitor/account_login"]:0,
+      ["clients/"+officialId+"/monitor/account_name"]:"",
+      ["clients/"+officialId+"/monitor/broker"]:"",
+      ["clients/"+officialId+"/monitor/server"]:"",
+      ["clients/"+officialId+"/monitor/mt5_signal"]:"DISCONNECTED",
+      ["clients/"+officialId+"/monitor/last_update"]:stamp
+    };
+
+    try{
+      await update(ref(db,"TradeLink"), updates);
+      showToast("Binding reset and monitor refreshed for " + officialId + ".");
+    }catch(e){
+      console.error(e);
+      showToast("Failed to reset binding. Check Firebase rules.");
+    }
+  };
+
+  window.bindClientAccount = async function(clientId){
+    if(!(hasPermission("canEditLicense") || hasPermission("canResetDevice"))){ deny(); return; }
+
+    const officialId = normalizeClientId(clientId);
+    const clientData = getClientSnapshotData(clientId);
+    const monitor = clientData.monitor || {};
+    const license = clientData.license || {};
+    const stamp = nowStamp();
+
+    let login = String(monitor.account_login || license.mt5AccountLogin || license.account_login || "").trim();
+    let accountName = String(monitor.account_name || license.mt5AccountName || license.account_name || "").trim();
+    let broker = String(monitor.broker || license.broker || "").trim();
+    let server = String(monitor.server || license.server || "").trim();
+
+    login = prompt("MT5 Account Login untuk " + officialId + ":", login);
+    if(login === null) return;
+    login = String(login || "").trim();
+    if(!login){ showToast("MT5 Account Login wajib diisi."); return; }
+
+    accountName = prompt("MT5 Account Name:", accountName);
+    if(accountName === null) return;
+    accountName = String(accountName || "").trim();
+
+    broker = prompt("Broker:", broker);
+    if(broker === null) return;
+    broker = String(broker || "").trim();
+
+    server = prompt("Server:", server);
+    if(server === null) return;
+    server = String(server || "").trim();
+
+    const numericLogin = Number(login);
+    const finalLogin = isNaN(numericLogin) ? login : numericLogin;
+    const deviceId = String(license.deviceId || ("MT5-" + login)).trim();
+
+    const updates = {
+      ["clients/"+officialId+"/license/mt5AccountLogin"]:finalLogin,
+      ["clients/"+officialId+"/license/mt5AccountName"]:accountName,
+      ["clients/"+officialId+"/license/broker"]:broker,
+      ["clients/"+officialId+"/license/server"]:server,
+      ["clients/"+officialId+"/license/deviceId"]:deviceId,
+      ["clients/"+officialId+"/license/deviceBindStatus"]:"bound",
+      ["clients/"+officialId+"/license/lastBindingAt"]:stamp,
+      ["clients/"+officialId+"/license/updatedAt"]:stamp,
+
+      ["clients/"+officialId+"/monitor/account_login"]:finalLogin,
+      ["clients/"+officialId+"/monitor/account_name"]:accountName,
+      ["clients/"+officialId+"/monitor/broker"]:broker,
+      ["clients/"+officialId+"/monitor/server"]:server,
+      ["clients/"+officialId+"/monitor/mt5_signal"]:"CONNECTED",
+      ["clients/"+officialId+"/monitor/last_update"]:stamp
+    };
+
+    try{
+      await update(ref(db,"TradeLink"), updates);
+      showToast("Account bound and monitor refreshed for " + officialId + ".");
+    }catch(e){
+      console.error(e);
+      showToast("Failed to bind account. Check Firebase rules.");
+    }
+  };
+
   window.resetClientDevice = window.resetClientBinding;
-  window.resetClientBindingFromModal = async function(){ if(!editingClientId){ showToast("No client selected."); return; } await window.resetClientBinding(editingClientId); };
-  window.bindLatestMT5Account = async function(clientId){ if(!hasPermission("canResetDevice")){ deny(); return; } const {officialId, client}=getOfficialClientRecord(clientId); const monitor=client.monitor || {}; const accountLogin=monitor.account_login || monitor.login || monitor.account || 0; if(!accountLogin){ showToast("No latest MT5 account_login found in monitor for " + officialId + "."); return; } if(!confirm("Bind latest MT5 account " + accountLogin + " to " + officialId + "?")) return; const payload={deviceId:String(accountLogin),lastLogin:monitor.last_update || timestampNow(),account_login:Number(accountLogin)||accountLogin,account_name:monitor.account_name || "",broker:monitor.broker || "",server:monitor.server || "",mt5_signal:monitor.mt5_signal || "",bindingStatus:"BOUND",updatedAt:timestampNow()}; try{ await update(ref(db,"TradeLink/clients/"+officialId+"/license"),payload); showToast("Latest MT5 account bound at TradeLink/clients/" + officialId + "/license"); }catch(e){ console.error(e); showToast("Failed to bind account at official client ID path."); } };
-  window.bindLatestMT5AccountFromModal = async function(){ if(!editingClientId){ showToast("No client selected."); return; } await window.bindLatestMT5Account(editingClientId); };
-  window.quickExtendClientLicense = function(days){ if(!hasPermission("canEditLicense")){ deny(); return; } const expiryInput=document.getElementById("editClientExpiry"); const current=expiryInput.value; let base=parseDateOnly(current); const today=new Date(); const todayOnly=new Date(today.getFullYear(),today.getMonth(),today.getDate()); if(!base || base < todayOnly) base=todayOnly; base.setDate(base.getDate()+Number(days||0)); const pad=n=>String(n).padStart(2,"0"); expiryInput.value=base.getFullYear()+"-"+pad(base.getMonth()+1)+"-"+pad(base.getDate()); showToast("License expiry extended " + days + " days. Click Save Changes to apply."); };
+  window.resetClientBindingFromModal = async function(){
+    if(!editingClientId){ showToast("No client selected."); return; }
+    await window.resetClientBinding(editingClientId);
+  };
   window.archiveClient = async function(clientId){ if(!hasPermission("canArchiveClient")){ deny(); return; } if(!confirm("Archive client " + clientId + "?")) return; try{ await update(ref(db,"TradeLink"),{["users/"+clientId+"/status"]:"archived",["clients/"+clientId+"/profile/status"]:"archived"}); showToast("Client archived successfully."); }catch(e){ console.error(e); showToast("Failed to archive client."); } };
   window.logoutAdmin = function(){ clearAdminSession(); window.location.href="admin-login.html"; };
 
