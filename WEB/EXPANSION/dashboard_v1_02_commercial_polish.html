@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Dashboard Notification Center v1.02</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    :root{
+      --bg:#0f172a;--bg2:#111827;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;--disabled:#64748b;
+      --blue:#3b82f6;--blue2:#2563eb;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--cyan:#06b6d4;
+      --border:rgba(255,255,255,.06)
+    }
+    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,var(--bg),var(--bg2));color:var(--text);padding:18px}
+    .container{max-width:1250px;margin:auto}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
+    .brand p{font-size:13px;color:var(--muted);margin-top:4px}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:var(--text);font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .nav a:hover,.nav button:hover{background:var(--card);transform:translateY(-1px);box-shadow:0 0 18px rgba(59,130,246,.28)}
+    .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+    .card,.summary-card{background:rgba(30,41,59,.78);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease}
+    .card{margin-bottom:16px}
+    .card-title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    .card h3,.card-title-row h3{color:var(--muted);font-size:13px;font-weight:normal;letter-spacing:.3px;text-transform:uppercase}
+    .summary-card span{display:block;color:var(--muted);font-size:12px;margin-bottom:10px}
+    .summary-card strong{font-size:28px;color:var(--text)}
+    .row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .row:last-child{border-bottom:none}
+    .row span:first-child{color:var(--muted)}
+    .row span:last-child{font-weight:900;text-align:right;word-break:break-word}
+    .badge{display:inline-flex;align-items:center;justify-content:center;min-width:72px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.25px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1;white-space:nowrap}
+    .badge-green{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.35);color:#86efac}
+    .badge-red{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.35);color:#fca5a5}
+    .badge-blue{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.35);color:#93c5fd}
+    .badge-cyan{background:rgba(6,182,212,.14);border-color:rgba(6,182,212,.35);color:#67e8f9}
+    .badge-orange{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fcd34d}
+    .badge-grey{background:rgba(156,163,175,.14);border-color:rgba(156,163,175,.35);color:#d1d5db}
+    .status-green{color:var(--green)!important}.status-red{color:var(--red)!important}.status-blue{color:var(--blue)!important}.status-orange{color:var(--orange)!important}.status-grey{color:#9ca3af!important}.status-cyan{color:var(--cyan)!important}
+    .signal{display:inline-flex;align-items:center;gap:8px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .dot.red{background:var(--red);box-shadow:0 0 12px rgba(239,68,68,.9)}
+    .dot.grey{background:#9ca3af;box-shadow:none}
+    .notice-list{display:flex;flex-direction:column;gap:10px}
+    .notice{display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:#111827}
+    .notice-icon{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 34px}
+    .notice.red .notice-icon{background:rgba(239,68,68,.16);color:#fca5a5}
+    .notice.orange .notice-icon{background:rgba(245,158,11,.16);color:#fcd34d}
+    .notice.green .notice-icon{background:rgba(34,197,94,.16);color:#86efac}
+    .notice.blue .notice-icon{background:rgba(59,130,246,.16);color:#93c5fd}
+    .notice.grey .notice-icon{background:rgba(156,163,175,.16);color:#d1d5db}
+    .notice-title{font-size:14px;font-weight:900;margin-bottom:4px}
+    .notice-msg{font-size:12px;color:var(--muted);line-height:1.45}
+    .notice-time{font-size:11px;color:var(--disabled);margin-top:6px}
+    .empty{padding:20px;text-align:center;color:var(--muted);line-height:1.5;background:#111827;border-radius:16px;border:1px solid var(--border)}
+    .loading{position:fixed;inset:0;background:rgba(2,6,23,.88);display:flex;align-items:center;justify-content:center;z-index:80;color:var(--text);text-align:center;padding:20px}
+    .loading-box{background:rgba(30,41,59,.86);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.5);max-width:380px;width:100%}
+    .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(148,163,184,.3);border-top-color:var(--blue);margin:0 auto 16px;animation:spin .8s linear infinite}
+    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:900px){.grid,.summary-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){body{padding:14px}.brand h1{font-size:21px}.grid,.summary-grid{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.summary-card strong{font-size:24px}.row{font-size:13px}}
+  /* TradeLink Manager Better Mobile UX Patch v1.02 */
+@media(max-width:768px){body{padding:12px!important}.container{max-width:100%!important}.topbar{align-items:flex-start!important}.brand h1{font-size:20px!important}.brand p{font-size:12px!important}.nav{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}.nav a,.nav button{width:100%!important;min-height:44px!important}.card{padding:15px!important;border-radius:18px!important;margin-bottom:12px!important}.row{padding:12px 0!important;font-size:14px!important}.quick-grid,.bottom-grid,.summary-grid,.admin-row,.form-grid,.permission-grid,.analytics-metrics{grid-template-columns:1fr!important;gap:12px!important}table{min-width:980px!important}.table-wrap{border-radius:16px!important}.actions{display:grid!important;grid-template-columns:1fr!important}.small-btn,.primary-btn,.secondary-btn,.danger-btn{min-height:42px!important;width:100%!important}.modal-box{max-height:94vh!important;border-radius:20px!important;padding:16px!important}canvas{min-height:240px!important}}
+@media(max-width:380px){.nav{grid-template-columns:1fr!important}.brand h1{font-size:18px!important}.value,.balance-value{font-size:22px!important}}
+
+</style>
+</head>
+<body>
+<div class="loading" id="loadingScreen"><div class="loading-box"><div class="spinner"></div><h2>Loading Dashboard</h2><p style="color:#94a3b8;font-size:13px;margin-top:8px">Checking client realtime data...</p></div></div>
+
+<div class="container" id="dashboardApp" style="display:none;">
+  <div class="topbar">
+    <div class="brand"><h1>TRADELINK MANAGER</h1><p>DARK TRADING PRO Dashboard v1.02 Notification Center</p></div>
+    <div><span class="badge badge-blue" id="clientIdBadge">CLIENT</span></div>
+  </div>
+
+  <div class="nav">
+    <a href="../dashboard.html">Dashboard</a>
+    <a href="../controlpanel.html">Control Panel</a>
+    <a href="../analytics.html">Analytics</a>
+    <a href="../setting.html">Setting</a>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card"><span>Balance</span><strong id="balanceView">0.00</strong></div>
+    <div class="summary-card"><span>Equity</span><strong id="equityView">0.00</strong></div>
+    <div class="summary-card"><span>Floating P/L</span><strong id="floatingView" class="status-grey">0.00</strong></div>
+    <div class="summary-card"><span>Notifications</span><strong id="notificationCount" class="status-orange">0</strong></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div class="card-title-row"><h3>Realtime Account Monitor</h3><span class="badge badge-cyan" id="realtimeBadge">REALTIME</span></div>
+        <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+        <div class="row"><span>Package</span><span id="packageView">-</span></div>
+        <div class="row"><span>Status</span><span id="statusView">-</span></div>
+        <div class="row"><span>EA Status</span><span class="signal"><span class="dot grey" id="signalDot"></span><span id="mt5Signal">DISCONNECTED</span></span></div>
+        <div class="row"><span>Account Login</span><span id="accountLogin">-</span></div>
+        <div class="row"><span>Broker</span><span id="broker">-</span></div>
+        <div class="row"><span>Server</span><span id="server">-</span></div>
+        <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
+        <div class="row"><span>Last Update</span><span id="lastUpdate">-</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title-row"><h3>License & Connection Health</h3><span class="badge badge-grey" id="connectBadge">CHECKING</span></div>
+        <div class="row"><span>License Expiry</span><span id="expiryDate">-</span></div>
+        <div class="row"><span>Expiry Remaining</span><span id="expiryRemaining">-</span></div>
+        <div class="row"><span>Device Lock</span><span id="deviceLock">-</span></div>
+        <div class="row"><span>Device ID</span><span id="deviceId">-</span></div>
+        <div class="row"><span>Last Login</span><span id="lastLogin">-</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title-row"><h3>Notification Center</h3><span class="badge badge-orange" id="alertBadge">0 ALERT</span></div>
+        <div class="notice-list" id="notificationList"><div class="empty">No realtime notification yet.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title-row"><h3>Smart Connect Flow</h3><span class="badge badge-blue">GUIDE</span></div>
+        <div class="notice-list" id="connectFlowList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = { databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const clientId = localStorage.getItem("clientId") || "";
+  const clientSessionToken = localStorage.getItem("clientSessionToken") || "";
+
+  function $(id){ return document.getElementById(id); }
+  function setText(id,value){ const el=$(id); if(el) el.innerText = value ?? "-"; }
+  function num(v){ return Number(v || 0); }
+  function money(v, monitor={}){ const symbol = monitor.currency_symbol || (String(monitor.account_currency||"").toUpperCase()==="USD" ? "$" : ""); const n = num(v).toFixed(2); if(symbol==="$") return "$"+n; if(symbol==="RM") return "RM "+n; return symbol ? symbol+" "+n : n; }
+  function escapeHtml(value){ return String(value ?? "-").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[c])); }
+  function badgeClass(type){ return "badge badge-" + type; }
+  function logout(){ localStorage.clear(); window.location.href="../../index.html"; }
+  window.logout = logout;
+
+  function daysUntil(dateStr){
+    if(!dateStr) return null;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const d = new Date(dateStr + "T00:00:00");
+    if(Number.isNaN(d.getTime())) return null;
+    return Math.ceil((d - today) / 86400000);
+  }
+
+  function expiryLabel(expiryDate){
+    const d = daysUntil(expiryDate);
+    if(d === null) return {text:"NO EXPIRY", type:"grey", days:null};
+    if(d < 0) return {text:"EXPIRED", type:"red", days:d};
+    if(d < 7) return {text:d + " days left", type:"orange", days:d};
+    return {text:d + " days left", type:"green", days:d};
+  }
+
+  function addNotice(list, level, title, msg, time="-"){
+    list.push({level,title,msg,time});
+  }
+
+  function renderNotice(list){
+    setText("notificationCount", list.length);
+    setText("alertBadge", list.length + (list.length === 1 ? " ALERT" : " ALERTS"));
+    const box = $("notificationList");
+    if(!list.length){
+      box.innerHTML = `<div class="empty">System normal. No important notification detected.</div>`;
+      return;
+    }
+    box.innerHTML = list.map(n=>`
+      <div class="notice ${n.level}">
+        <div class="notice-icon">${n.level==="red"?"!":n.level==="orange"?"⚠":n.level==="green"?"✓":"i"}</div>
+        <div>
+          <div class="notice-title">${escapeHtml(n.title)}</div>
+          <div class="notice-msg">${escapeHtml(n.msg)}</div>
+          <div class="notice-time">${escapeHtml(n.time || "-")}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderConnectFlow(monitor={}, license={}, profile={}){
+    const mt5 = String(monitor.mt5_signal || "DISCONNECTED").toUpperCase();
+    const login = monitor.account_login || "";
+    const expiry = expiryLabel(license.expiryDate || "");
+    const steps = [];
+
+    if(String(profile.status||"").toLowerCase() !== "active"){
+      steps.push({level:"red", title:"Client account inactive", msg:"Admin perlu aktifkan status client sebelum sambungan penuh digunakan."});
+    }else{
+      steps.push({level:"green", title:"Client account active", msg:"Profile status active."});
+    }
+
+    if(!license.expiryDate){
+      steps.push({level:"orange", title:"License expiry missing", msg:"Tetapkan expiryDate untuk enable commercial license tracking."});
+    }else if(expiry.days < 0){
+      steps.push({level:"red", title:"License expired", msg:"Renew license sebelum client terus gunakan system."});
+    }else{
+      steps.push({level:"green", title:"License valid", msg:"Expiry remaining: " + expiry.text});
+    }
+
+    if(!login || Number(login) === 0){
+      steps.push({level:"orange", title:"MT5 account not detected", msg:"Pastikan EA sudah attach pada MT5 dan clientId betul."});
+    }else{
+      steps.push({level:"green", title:"MT5 account detected", msg:"Account login: " + login});
+    }
+
+    if(mt5 === "CONNECTED"){
+      steps.push({level:"green", title:"EA connected", msg:"Realtime monitor berjalan normal."});
+    }else if(mt5 === "EA_PAUSE"){
+      steps.push({level:"orange", title:"EA paused", msg:"Semak Algo Trading / Expert Advisor status di MT5."});
+    }else{
+      steps.push({level:"red", title:"EA disconnected", msg:"Buka MT5, attach EA, semak internet/VPS dan Firebase setup."});
+    }
+
+    $("connectFlowList").innerHTML = steps.map(s=>`
+      <div class="notice ${s.level}">
+        <div class="notice-icon">${s.level==="red"?"!":s.level==="orange"?"⚠":"✓"}</div>
+        <div><div class="notice-title">${escapeHtml(s.title)}</div><div class="notice-msg">${escapeHtml(s.msg)}</div></div>
+      </div>
+    `).join("");
+  }
+
+  async function validateSession(){
+    if(!clientId){ logout(); return false; }
+    if(!clientSessionToken) return true;
+    try{
+      const snap = await get(ref(db,"TradeLink/users/" + clientId));
+      const user = snap.val() || {};
+      if(user.sessionToken && user.sessionToken !== clientSessionToken){ logout(); return false; }
+      return true;
+    }catch(e){ console.error(e); return true; }
+  }
+
+  function renderDashboard(data){
+    const profile = data.profile || {};
+    const monitor = data.monitor || {};
+    const license = data.license || {};
+    const settings = data.settings || {};
+    const notices = [];
+    const floating = num(monitor.floating_pl || monitor.floating);
+    const mt5 = String(monitor.mt5_signal || "DISCONNECTED").toUpperCase();
+    const expiry = expiryLabel(license.expiryDate || "");
+
+    setText("clientIdBadge", clientId);
+    setText("clientName", profile.name || localStorage.getItem("clientName") || "-");
+    setText("packageView", String(profile.package || localStorage.getItem("clientPackage") || "BASIC").toUpperCase());
+    setText("statusView", String(profile.status || "inactive").toUpperCase());
+    setText("mt5Signal", mt5);
+    setText("accountLogin", monitor.account_login || "-");
+    setText("broker", monitor.broker || "-");
+    setText("server", monitor.server || "-");
+    setText("totalTrades", monitor.total_trades || 0);
+    setText("lastUpdate", monitor.last_update || "-");
+    setText("balanceView", money(monitor.balance, monitor));
+    setText("equityView", money(monitor.equity, monitor));
+    setText("floatingView", money(floating, monitor));
+    $("floatingView").className = floating > 0 ? "status-green" : floating < 0 ? "status-red" : "status-grey";
+
+    setText("expiryDate", license.expiryDate || "-");
+    setText("expiryRemaining", expiry.text);
+    $("expiryRemaining").className = "status-" + (expiry.type === "grey" ? "grey" : expiry.type);
+    setText("deviceLock", license.deviceLock === true ? "TRUE" : "FALSE");
+    setText("deviceId", license.deviceId || "-");
+    setText("lastLogin", license.lastLogin || "-");
+
+    const dot = $("signalDot");
+    dot.className = "dot";
+    if(mt5 === "CONNECTED") dot.className = "dot";
+    else if(mt5 === "EA_PAUSE") dot.className = "dot grey";
+    else dot.className = "dot red";
+
+    if(mt5 === "CONNECTED") $("connectBadge").className = badgeClass("green"), setText("connectBadge","CONNECTED");
+    else if(mt5 === "EA_PAUSE") $("connectBadge").className = badgeClass("orange"), setText("connectBadge","EA PAUSE");
+    else $("connectBadge").className = badgeClass("red"), setText("connectBadge","DISCONNECTED");
+
+    if(mt5 === "DISCONNECTED") addNotice(notices,"red","EA disconnected","MT5 EA tidak menghantar signal CONNECTED. Semak VPS, internet, Algo Trading dan EA input.", monitor.last_update || "-");
+    if(mt5 === "EA_PAUSE") addNotice(notices,"orange","EA pause detected","EA dikesan pause. Semak Auto/Algo Trading dan Expert Advisor permission.", monitor.last_update || "-");
+    if(!monitor.account_login || Number(monitor.account_login) === 0) addNotice(notices,"orange","No account connected","Account login belum dikesan daripada MT5.", monitor.last_update || "-");
+    if(expiry.days === null) addNotice(notices,"orange","No license expiry","License expiryDate belum ditetapkan.", "-");
+    else if(expiry.days < 0) addNotice(notices,"red","License expired","License client telah tamat tempoh pada " + license.expiryDate + ".", license.expiryDate);
+    else if(expiry.days < 7) addNotice(notices,"orange","License near expiry","License akan tamat dalam " + expiry.days + " hari.", license.expiryDate);
+    if(license.deviceLock === true && !license.deviceId) addNotice(notices,"orange","Device lock waiting binding","Device Lock aktif tetapi deviceId masih kosong. Binding akan berlaku bila EA/client login.", license.lastLogin || "-");
+    if(floating < 0) addNotice(notices,"orange","Floating loss detected","Floating P/L semasa negatif: " + money(floating, monitor), monitor.last_update || "-");
+    if(String(profile.status||"").toLowerCase() !== "active") addNotice(notices,"red","Client inactive","Status client bukan active. Akses mungkin terganggu.", "-");
+
+    renderNotice(notices);
+    renderConnectFlow(monitor, license, profile);
+  }
+
+  async function init(){
+    const ok = await validateSession();
+    if(!ok) return;
+    $("loadingScreen").style.display="none";
+    $("dashboardApp").style.display="block";
+    onValue(ref(db,"TradeLink/clients/" + clientId), snap => {
+      renderDashboard(snap.val() || {});
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
