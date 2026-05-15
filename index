@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Login</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top, rgba(59,130,246,0.25), transparent 35%),
+        linear-gradient(135deg,#0f172a,#111827);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#f8fafc;
+      overflow:hidden;
+      padding:20px;
+    }
+
+    .login-box{
+      width:100%;
+      max-width:420px;
+      background:rgba(30,41,59,0.72);
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:24px;
+      padding:34px 28px;
+      backdrop-filter:blur(16px);
+      box-shadow:0 25px 80px rgba(0,0,0,0.45);
+      animation:fadeIn .8s ease;
+    }
+
+    .logo{
+      text-align:center;
+      margin-bottom:28px;
+    }
+
+    .logo h1{
+      font-size:28px;
+      letter-spacing:1.5px;
+      color:#f8fafc;
+      text-shadow:0 0 18px rgba(59,130,246,0.7);
+      animation:glow 3s ease-in-out infinite alternate;
+    }
+
+    .logo p{
+      margin-top:8px;
+      font-size:13px;
+      color:#94a3b8;
+    }
+
+    .form-group{
+      margin-bottom:18px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:8px;
+      font-size:13px;
+      color:#94a3b8;
+    }
+
+    input{
+      width:100%;
+      padding:14px 15px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:#0f172a;
+      color:#f8fafc;
+      font-size:15px;
+      outline:none;
+      transition:.25s;
+    }
+
+    input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 3px rgba(59,130,246,0.18);
+    }
+
+    button{
+      width:100%;
+      margin-top:8px;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:#3b82f6;
+      color:white;
+      font-weight:bold;
+      font-size:15px;
+      cursor:pointer;
+      transition:.25s;
+    }
+
+    button:hover{
+      background:#2563eb;
+      transform:translateY(-1px);
+      box-shadow:0 10px 30px rgba(37,99,235,0.35);
+    }
+
+    button:disabled{
+      background:#64748b;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .error{
+      display:none;
+      margin-top:16px;
+      padding:12px;
+      border-radius:12px;
+      background:rgba(239,68,68,0.12);
+      border:1px solid rgba(239,68,68,0.25);
+      color:#fca5a5;
+      font-size:13px;
+      text-align:center;
+    }
+
+    .footer{
+      margin-top:24px;
+      text-align:center;
+      font-size:12px;
+      color:#64748b;
+    }
+
+    .status-dot{
+      display:inline-block;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#22c55e;
+      margin-right:6px;
+      box-shadow:0 0 12px rgba(34,197,94,0.9);
+      animation:pulse 1.5s infinite;
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0; transform:translateY(18px);}
+      to{opacity:1; transform:translateY(0);}
+    }
+
+    @keyframes glow{
+      from{text-shadow:0 0 10px rgba(59,130,246,0.35);}
+      to{text-shadow:0 0 25px rgba(59,130,246,0.9);}
+    }
+
+    @keyframes pulse{
+      0%{opacity:.45;}
+      50%{opacity:1;}
+      100%{opacity:.45;}
+    }
+
+    @media(max-width:480px){
+      .login-box{
+        padding:28px 22px;
+        border-radius:20px;
+      }
+
+      .logo h1{
+        font-size:24px;
+      }
+
+      input,button{
+        font-size:14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-box">
+    <div class="logo">
+      <h1>TRADELINK MANAGER</h1>
+      <p><span class="status-dot"></span>Premium EA Dashboard</p>
+    </div>
+
+    <div class="form-group">
+      <label>Username ID</label>
+      <input type="text" id="clientId" placeholder="Enter your Username ID" autocomplete="username" />
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
+    </div>
+
+    <button id="loginBtn" onclick="login()">LOGIN</button>
+
+    <div class="error" id="errorBox"></div>
+
+    <div class="footer">
+      DARK TRADING PRO v1.00
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const existingClient = localStorage.getItem("clientId");
+
+    if(existingClient){
+      window.location.href = "dashboard.html";
+    }
+
+    window.login = async function(){
+      const clientId = document.getElementById("clientId").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorBox = document.getElementById("errorBox");
+      const loginBtn = document.getElementById("loginBtn");
+
+      errorBox.style.display = "none";
+      errorBox.innerText = "";
+
+      if(clientId === "" || password === ""){
+        errorBox.innerText = "Please enter Username ID and Password.";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.innerText = "CHECKING...";
+
+      try{
+        const userRef = ref(db, "TradeLink/users/" + clientId);
+        const snapshot = await get(userRef);
+
+        if(!snapshot.exists()){
+          errorBox.innerText = "Invalid Username ID or Password.";
+          errorBox.style.display = "block";
+          return;
+        }
+
+        const userData = snapshot.val();
+
+        if(userData.password === password && userData.status === "active"){
+          localStorage.setItem("clientId", clientId);
+          localStorage.setItem("sessionToken", userData.sessionToken || "");
+          localStorage.setItem("isDemo", userData.isDemo === true ? "true" : "false");
+          localStorage.setItem("clientKey", userData.clientKey || clientId);
+          localStorage.setItem("clientName", userData.name || "");
+          localStorage.setItem("clientPackage", userData.package || "");
+
+          window.location.href = "dashboard.html";
+        }
+        else if(userData.status !== "active"){
+          errorBox.innerText = "Account is inactive. Please contact admin.";
+          errorBox.style.display = "block";
+        }
+        else{
+          errorBox.innerText = "Invalid Username ID or Password.";
+          errorBox.style.display = "block";
+        }
+
+      }catch(error){
+        errorBox.innerText = "Connection error. Please check Firebase rules or internet connection.";
+        errorBox.style.display = "block";
+        console.error(error);
+      }finally{
+        loginBtn.disabled = false;
+        loginBtn.innerText = "LOGIN";
+      }
+    };
+
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        window.login();
+      }
+    });
+  </script>
+
+</body>
+</html>
