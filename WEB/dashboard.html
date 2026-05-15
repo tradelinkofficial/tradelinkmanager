@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradeLink Manager | Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,#0f172a,#111827);color:#f8fafc;padding:18px}
+    .container{max-width:1250px;margin:auto}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
+    .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:#f8fafc;font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .nav a:hover,.nav button:hover{background:#1e293b;transform:translateY(-1px)}
+    .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
+    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
+    .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
+    .card-title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .card-title-row h3{margin-bottom:0}
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .bottom-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}
+    .value{font-size:26px;font-weight:bold}
+    .balance-value{font-size:30px;font-weight:bold;letter-spacing:.2px}
+    .symbol-line{color:#94a3b8;font-size:13px;margin-top:7px;font-weight:bold}
+    .small{color:#94a3b8;font-size:12px;margin-top:6px}
+    .profit{color:#22c55e}.loss{color:#ef4444}.info{color:#06b6d4}.warning{color:#f59e0b}
+    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}.status-gray{color:#9ca3af}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);gap:12px}
+    .row span:first-child{color:#94a3b8}
+    .row span:last-child{text-align:right;font-weight:bold}
+    .balance-row{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+    .eye-btn{width:34px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#111827;color:#94a3b8;cursor:pointer}
+    .eye-btn svg{width:17px;height:17px;stroke:#94a3b8}
+    .mini-signal{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(17,24,39,.85);border:1px solid rgba(255,255,255,.06);font-size:12px;font-weight:bold;color:#94a3b8}
+    .demo-badge{display:none;align-items:center;justify-content:center;padding:8px 10px;border-radius:999px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:12px;font-weight:bold;letter-spacing:.4px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,.9);animation:pulse 1.5s infinite}
+    .dot.connected{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9)}
+    .dot.pause{background:#9ca3af;box-shadow:0 0 10px rgba(156,163,175,.55)}
+    .filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .filter button{border:none;padding:8px 12px;border-radius:10px;background:#111827;color:#94a3b8;cursor:pointer;border:1px solid rgba(255,255,255,.06)}
+    .filter button.active{background:#3b82f6;color:#fff}
+    .activity{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .activity strong{display:block;font-size:14px;margin-bottom:4px}
+    .activity span{color:#94a3b8;font-size:13px}
+    .analytics-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .analytics-head h3{margin-bottom:4px}
+    .analytics-sub{color:#94a3b8;font-size:12px}
+    .analytics-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .metric-box{background:linear-gradient(180deg,rgba(17,24,39,.86),rgba(15,23,42,.72));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;position:relative;overflow:hidden}
+    .metric-box:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(59,130,246,.12),transparent 38%);pointer-events:none}
+    .metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;position:relative;z-index:1}
+    .metric-label{display:block;color:#94a3b8;font-size:11px;margin-bottom:0!important}
+    .metric-icon{width:24px;height:24px;border-radius:9px;display:inline-flex!important;align-items:center;justify-content:center;background:rgba(59,130,246,.12);border:1px solid rgba(255,255,255,.06);font-size:13px;color:#f8fafc;margin-bottom:0!important}
+    .metric-box strong{font-size:18px;letter-spacing:.2px;position:relative;z-index:1}
+    .chart-wrap{position:relative;background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.045);border-radius:16px;padding:12px}
+    .chart-wrap:before{content:"";position:absolute;left:12px;right:12px;top:12px;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.35),transparent)}
+    .chart-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:12px;pointer-events:none;padding:20px}
+    .chart-empty strong{display:block;color:#f8fafc;font-size:13px;margin-bottom:4px}
+    canvas{width:100%!important;max-height:330px;min-height:260px}
+    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.analytics-metrics{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value,.balance-value{font-size:24px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row{font-size:14px}.card-title-row{align-items:flex-start}.mini-signal{width:100%;justify-content:center}.analytics-metrics{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Dashboard MVP v1.00</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <a href="controlpanel.html">Control Panel</a>
+    <a href="setting.html">Setting</a>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title-row">
+      <h3>Account Information</h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <span class="demo-badge" id="demoBadge">DEMO MODE</span>
+        <div class="mini-signal">
+          <span class="dot" id="signalDot"></span>
+          <span id="mt5Signal">DISCONNECTED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+    <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
+    <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
+    <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+    <div class="row"><span>EA Status</span><span id="eaStatus">DISCONNECTED</span></div>
+    <div class="row">
+      <span>Balance</span>
+      <span class="balance-row">
+        <span class="balance-value" id="balance">*****</span>
+        <button class="eye-btn" onclick="toggleBalance()" id="eyeBtn" title="Show / Hide Balance"></button>
+      </span>
+    </div>
+    <div class="small" id="lastUpdate">Last update: -</div>
+  </div>
+
+  <div class="quick-grid">
+    <div class="card">
+      <h3>Floating P/L</h3>
+      <div class="value" id="floating">0.00</div>
+      <div class="symbol-line" id="activeSymbols">-</div>
+      <div class="small">Open trade profit/loss</div>
+    </div>
+
+    <div class="card">
+      <h3>Trading Statistics</h3>
+      <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
+      <div class="row"><span>Sell Count</span><span class="loss" id="sellCount">0</span></div>
+      <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="card">
+      <div class="analytics-head">
+        <div>
+          <h3>Trading Analytics</h3>
+          <div class="analytics-sub">Performance shown in percentage (%)</div>
+        </div>
+        <div class="filter">
+          <button class="active" onclick="changeAnalytics('daily', this)">Daily</button>
+          <button onclick="changeAnalytics('weekly', this)">Weekly</button>
+          <button onclick="changeAnalytics('monthly', this)">Monthly</button>
+        </div>
+      </div>
+
+      <div class="analytics-metrics">
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Balance Growth</span><span class="metric-icon">↗</span></div>
+          <strong id="balanceGrowthPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Floating P/L</span><span class="metric-icon">≈</span></div>
+          <strong id="floatingPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Profit Today</span><span class="metric-icon">✓</span></div>
+          <strong id="profitTodayPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Drawdown</span><span class="metric-icon">!</span></div>
+          <strong id="drawdownPct">0.00%</strong>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="historyChart"></canvas>
+        <div class="chart-empty" id="chartEmpty"><strong>No analytics data yet</strong><span>Waiting for EA history update from Firebase.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Recent Activity</h3>
+      <div class="activity"><strong id="activitySignal">DISCONNECTED</strong><span>Current MT5 connection status</span></div>
+      <div class="activity"><strong id="activityUpdate">-</strong><span>Last Firebase update</span></div>
+      <div class="activity"><strong id="activityClient">-</strong><span>Active login client</span></div>
+      <div class="activity"><strong id="activityPackage">-</strong><span>Current account package</span></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const clientId = localStorage.getItem("clientId");
+  if(!clientId){
+    window.location.href="index.html";
+  }
+
+  document.getElementById("clientIdView").innerText = clientId;
+  document.getElementById("activityClient").innerText = clientId;
+
+  const isDemo = localStorage.getItem("isDemo") === "true";
+  const demoBadge = document.getElementById("demoBadge");
+  if(demoBadge && isDemo){
+    demoBadge.style.display = "inline-flex";
+  }
+
+  const profileRef = ref(db,"TradeLink/clients/"+clientId+"/profile");
+  const monitorRef = ref(db,"TradeLink/clients/"+clientId+"/monitor");
+  const historyRef = ref(db,"TradeLink/clients/"+clientId+"/history");
+
+  let rawHistory = {};
+  let analyticsMode = "daily";
+  let balanceValue = 0;
+  let balanceVisible = false;
+  let currencySymbol = "";
+  let lastMonitorPoint = null;
+
+  const eyeOpenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+  const eyeClosedIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"></path><path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"></path><path d="M1 1l22 22"></path></svg>`;
+
+  function num(value){
+    return Number(value || 0);
+  }
+
+  function money(value){
+    return num(value).toFixed(2);
+  }
+
+  function pct(value){
+    return num(value).toFixed(2) + "%";
+  }
+
+  function pctClass(value, invert=false){
+    const n = num(value);
+    if(invert){
+      return n > 0 ? "loss" : "profit";
+    }
+    return n >= 0 ? "profit" : "loss";
+  }
+
+  function setMetric(id,value,invert=false){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerText = pct(value);
+    el.className = pctClass(value,invert);
+  }
+
+  function setText(id,value){
+    const el = document.getElementById(id);
+    if(el){
+      el.innerText = value ?? "-";
+    }
+  }
+
+  function normalizeEAStatus(value){
+    const signal = String(value || "DISCONNECTED").toUpperCase();
+
+    if(signal === "CONNECTED"){
+      return {text:"CONNECTED", className:"status-green", dotClass:"connected"};
+    }
+
+    if(signal === "EA_PAUSE"){
+      return {text:"EA PAUSE", className:"status-gray", dotClass:"pause"};
+    }
+
+    return {text:"DISCONNECTED", className:"status-red", dotClass:""};
+  }
+
+  function getCurrencySymbol(data){
+    const accountCurrency = String(data.account_currency || "").toUpperCase();
+    const firebaseSymbol = data.currency_symbol || "";
+
+    if(accountCurrency === "USDC"){
+      return "USDC";
+    }
+
+    if(firebaseSymbol){
+      return firebaseSymbol;
+    }
+
+    if(accountCurrency === "USD"){
+      return "$";
+    }
+
+    if(accountCurrency === "MYR"){
+      return "RM";
+    }
+
+    if(accountCurrency){
+      return accountCurrency;
+    }
+
+    return "";
+  }
+
+  function formatMoneyWithSymbol(value){
+    const amount = money(value);
+
+    if(currencySymbol === "RM"){
+      return "RM " + amount;
+    }
+
+    if(currencySymbol === "$"){
+      return "$" + amount;
+    }
+
+    if(currencySymbol){
+      return currencySymbol + " " + amount;
+    }
+
+    return amount;
+  }
+
+  function renderBalance(){
+    document.getElementById("balance").innerText = balanceVisible ? formatMoneyWithSymbol(balanceValue) : "*****";
+    document.getElementById("eyeBtn").innerHTML = balanceVisible ? eyeOpenIcon : eyeClosedIcon;
+  }
+
+  window.toggleBalance = function(){
+    balanceVisible = !balanceVisible;
+    renderBalance();
+  };
+
+  renderBalance();
+
+  onValue(profileRef,(snapshot)=>{
+    const data = snapshot.val() || {};
+    const packageValue = (data.package || "-").toUpperCase();
+    const statusValue = data.status || "-";
+
+    setText("clientName",data.name || "-");
+    setText("clientPackage",packageValue);
+    setText("clientStatus",statusValue);
+
+    document.getElementById("clientPackage").className = packageValue === "PRO" ? "status-green" : "status-blue";
+    document.getElementById("clientStatus").className = statusValue === "active" ? "status-green" : "status-red";
+
+    setText("activityPackage",packageValue);
+  });
+
+  onValue(monitorRef,(snapshot)=>{
+    const data = snapshot.val() || {};
+
+    currencySymbol = getCurrencySymbol(data);
+    balanceValue = num(data.balance);
+    renderBalance();
+
+    const floating = num(data.floating_pl || data.floating);
+    const signal = data.mt5_signal || "DISCONNECTED";
+    const eaStatus = normalizeEAStatus(signal);
+    const activeSymbols = data.active_symbols || "-";
+
+    const floatingEl = document.getElementById("floating");
+    floatingEl.innerText = formatMoneyWithSymbol(floating);
+    floatingEl.className = "value " + (floating >= 0 ? "profit" : "loss");
+
+    setText("activeSymbols",activeSymbols);
+    setText("mt5Signal",eaStatus.text);
+    setText("eaStatus",eaStatus.text);
+    setText("activitySignal",eaStatus.text);
+
+    document.getElementById("mt5Signal").className = eaStatus.className;
+    document.getElementById("eaStatus").className = eaStatus.className;
+    document.getElementById("activitySignal").className = eaStatus.className;
+
+    const signalDot = document.getElementById("signalDot");
+    signalDot.classList.remove("connected","pause");
+    if(eaStatus.dotClass){
+      signalDot.classList.add(eaStatus.dotClass);
+    }
+
+    const lastUpdate = data.last_update || "-";
+    setText("lastUpdate","Last update: " + lastUpdate);
+    setText("activityUpdate",lastUpdate);
+
+    const buy = num(data.buy_count);
+    const sell = num(data.sell_count);
+    const total = data.total_trades !== undefined ? num(data.total_trades) : buy + sell;
+
+    setText("buyCount",buy);
+    setText("sellCount",sell);
+    setText("totalTrades",total);
+
+    lastMonitorPoint = {
+      balance: balanceValue,
+      floating_pl: floating,
+      label: lastUpdate !== "-" ? lastUpdate : "Live"
+    };
+
+    if(Object.keys(rawHistory).length === 0){
+      renderHistory();
+    }
+  });
+
+  function setChartEmpty(show){
+    const el = document.getElementById("chartEmpty");
+    if(el){
+      el.style.display = show ? "flex" : "none";
+    }
+  }
+
+  const historyCanvas = document.getElementById("historyChart");
+  const historyChart = new Chart(historyCanvas,{
+    type:"line",
+    data:{
+      labels:[],
+      datasets:[
+        {label:"Balance Growth %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Floating P/L %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Drawdown %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      plugins:{
+        legend:{labels:{color:"#f8fafc"}},
+        tooltip:{
+          callbacks:{
+            label:function(context){
+              return context.dataset.label + ": " + num(context.parsed.y).toFixed(2) + "%";
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:"#94a3b8"},
+          grid:{color:"rgba(255,255,255,.06)"}
+        },
+        y:{
+          ticks:{
+            color:"#94a3b8",
+            callback:function(value){return value + "%";}
+          },
+          grid:{color:"rgba(255,255,255,.06)"}
+        }
+      }
+    }
+  });
+
+  onValue(historyRef,(snapshot)=>{
+    rawHistory = snapshot.val() || {};
+    renderHistory();
+
+    const keys = Object.keys(rawHistory).sort();
+    const latestKey = keys[keys.length - 1];
+
+    if(latestKey && rawHistory[latestKey] && rawHistory[latestKey].total_trades !== undefined){
+      setText("totalTrades",num(rawHistory[latestKey].total_trades));
+    }
+  });
+
+  function renderHistory(){
+    const labels = [];
+    const balanceGrowthData = [];
+    const floatingPctData = [];
+    const drawdownPctData = [];
+    const grouped = {};
+    const historyKeys = Object.keys(rawHistory || {}).sort();
+
+    historyKeys.forEach(date=>{
+      const item = rawHistory[date] || {};
+      let key = date;
+
+      if(analyticsMode === "weekly"){
+        key = getWeekKey(date);
+      }
+
+      if(analyticsMode === "monthly"){
+        key = String(date).substring(0,7);
+      }
+
+      grouped[key] = {
+        balance:num(item.balance),
+        floating_pl:num(item.floating_pl || item.floating),
+        profit_today:num(item.profit_today),
+        drawdown:num(item.drawdown),
+        drawdown_pct:item.drawdown_pct !== undefined ? num(item.drawdown_pct) : null
+      };
+    });
+
+    const orderedKeys = Object.keys(grouped).sort();
+    const firstKey = orderedKeys[0];
+    const firstBalance = firstKey ? num(grouped[firstKey].balance) : 0;
+    let latestMetrics = null;
+
+    orderedKeys.forEach(key=>{
+      const item = grouped[key];
+      const balance = num(item.balance);
+      const floating = num(item.floating_pl);
+      const profitToday = num(item.profit_today);
+
+      const balanceGrowth = firstBalance > 0 ? ((balance - firstBalance) / firstBalance) * 100 : 0;
+      const floatingPercent = balance > 0 ? (floating / balance) * 100 : 0;
+      const profitTodayPercent = balance > 0 ? (profitToday / balance) * 100 : 0;
+
+      let drawdownPercent = 0;
+      if(item.drawdown_pct !== null){
+        drawdownPercent = num(item.drawdown_pct);
+      }else if(balance > 0){
+        const rawDrawdown = Math.abs(num(item.drawdown));
+        drawdownPercent = rawDrawdown <= 100 ? rawDrawdown : (rawDrawdown / balance) * 100;
+      }
+
+      labels.push(key);
+      balanceGrowthData.push(Number(balanceGrowth.toFixed(2)));
+      floatingPctData.push(Number(floatingPercent.toFixed(2)));
+      drawdownPctData.push(Number(drawdownPercent.toFixed(2)));
+
+      latestMetrics = {
+        balanceGrowth,
+        floatingPercent,
+        profitTodayPercent,
+        drawdownPercent
+      };
+    });
+
+    if(labels.length === 0 && lastMonitorPoint){
+      const liveBalance = num(lastMonitorPoint.balance);
+      const liveFloatingPct = liveBalance > 0 ? (num(lastMonitorPoint.floating_pl) / liveBalance) * 100 : 0;
+
+      labels.push(lastMonitorPoint.label);
+      balanceGrowthData.push(0);
+      floatingPctData.push(Number(liveFloatingPct.toFixed(2)));
+      drawdownPctData.push(0);
+
+      latestMetrics = {
+        balanceGrowth:0,
+        floatingPercent:liveFloatingPct,
+        profitTodayPercent:0,
+        drawdownPercent:0
+      };
+    }
+
+    if(latestMetrics){
+      setMetric("balanceGrowthPct",latestMetrics.balanceGrowth);
+      setMetric("floatingPct",latestMetrics.floatingPercent);
+      setMetric("profitTodayPct",latestMetrics.profitTodayPercent);
+      setMetric("drawdownPct",latestMetrics.drawdownPercent,true);
+    }else{
+      setMetric("balanceGrowthPct",0);
+      setMetric("floatingPct",0);
+      setMetric("profitTodayPct",0);
+      setMetric("drawdownPct",0,true);
+    }
+
+    setChartEmpty(labels.length === 0);
+
+    historyChart.data.labels = labels;
+    historyChart.data.datasets[0].data = balanceGrowthData;
+    historyChart.data.datasets[1].data = floatingPctData;
+    historyChart.data.datasets[2].data = drawdownPctData;
+    historyChart.update();
+  }
+
+  function getWeekKey(dateStr){
+    const d = new Date(dateStr);
+    if(isNaN(d)){
+      return dateStr;
+    }
+
+    const firstDay = new Date(d.getFullYear(),0,1);
+    const pastDays = Math.floor((d - firstDay) / 86400000);
+    const week = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+
+    return d.getFullYear() + "-W" + String(week).padStart(2,"0");
+  }
+
+  window.changeAnalytics = function(mode,btn){
+    analyticsMode = mode;
+    document.querySelectorAll(".filter button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderHistory();
+  };
+
+  window.logout = function(){
+    localStorage.clear();
+    window.location.href = "index.html";
+  };
+</script>
+</body>
+</html>
