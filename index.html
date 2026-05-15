@@ -216,7 +216,7 @@
     const existingClient = localStorage.getItem("clientId");
 
     if(existingClient){
-      window.location.href = "dashboard.html";
+      window.location.href = "WEB/dashboard.html";
     }
 
     window.login = async function(){
@@ -257,7 +257,7 @@
           localStorage.setItem("clientName", userData.name || "");
           localStorage.setItem("clientPackage", userData.package || "");
 
-          window.location.href = "dashboard.html";
+          window.location.href = "WEB/dashboard.html";
         }
         else if(userData.status !== "active"){
           errorBox.innerText = "Account is inactive. Please contact admin.";
