@@ -3,318 +3,934 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TradeLink Manager | Analytics</title>
-
+  <title>TradeLink Manager | Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    :root{
-      --bg:#0f172a;--bg2:#111827;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;--disabled:#64748b;
-      --blue:#3b82f6;--blue2:#2563eb;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--cyan:#06b6d4;
-      --border:rgba(255,255,255,.06)
-    }
-    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,var(--bg),var(--bg2));color:var(--text);padding:18px}
-    .container{max-width:1450px;margin:auto}
+    body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,#0f172a,#111827);color:#f8fafc;padding:18px}
+    .container{max-width:1250px;margin:auto}
     .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
     .brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}
-    .brand p{font-size:13px;color:var(--muted);margin-top:4px}
-    .chip-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .live-chip,.package-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.35);color:#93c5fd;font-size:12px;font-weight:900;letter-spacing:.35px;text-transform:uppercase}
-    .package-chip.pro{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.35);color:#86efac}
-    .package-chip.basic{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fcd34d}
-    .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(34,197,94,.9);animation:pulse 1.5s infinite}
+    .brand p{font-size:13px;color:#94a3b8;margin-top:4px}
     .nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:var(--text);font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.18)}
-    .nav a:hover,.nav button:hover{background:var(--card);transform:translateY(-1px);box-shadow:0 0 18px rgba(59,130,246,.28)}
+    .nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:#f8fafc;font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .nav a:hover,.nav button:hover{background:#1e293b;transform:translateY(-1px)}
     .logoutBtn{background:rgba(239,68,68,.18)!important;color:#fca5a5!important}
-    .card{background:rgba(30,41,59,.78);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
-    .card h3{color:var(--muted);font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px;text-transform:uppercase}
-    .card-title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}.card-title-row h3{margin-bottom:0}
-    .summary-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:16px}
-    .summary-card{background:rgba(30,41,59,.78);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease}
-    .summary-card span{display:block;color:var(--muted);font-size:12px;margin-bottom:10px}.summary-card strong{font-size:25px;color:var(--text);word-break:break-word}
-    .status-green{color:var(--green)!important}.status-red{color:var(--red)!important}.status-blue{color:var(--blue)!important}.status-orange{color:var(--orange)!important}.status-cyan{color:var(--cyan)!important}.status-grey{color:#9ca3af!important}
-    .filter-row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
-    .filter-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .filter-btn{border:none;border-radius:12px;padding:10px 13px;background:#111827;color:var(--muted);border:1px solid rgba(255,255,255,.08);font-weight:900;cursor:pointer;transition:.25s}
-    .filter-btn:hover,.filter-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 18px rgba(59,130,246,.28)}
-    .chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-    .chart-box{background:#111827;border:1px solid var(--border);border-radius:18px;padding:14px;min-height:330px;position:relative;overflow:hidden}
-    .chart-box.wide{grid-column:1/-1;min-height:370px}
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-    .kpi-card{background:#111827;border:1px solid var(--border);border-radius:16px;padding:13px}
-    .kpi-card span{display:block;color:var(--muted);font-size:11px;margin-bottom:7px;text-transform:uppercase;letter-spacing:.3px}.kpi-card strong{font-size:18px}
-    .chart-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-    .chart-head strong{font-size:14px}.chart-head span{font-size:12px;color:var(--muted)}
-    canvas{width:100%!important;height:260px!important}
-    .lock-box{display:none;text-align:center;padding:40px 20px}.lock-icon{font-size:42px;margin-bottom:12px}.lock-box h2{font-size:22px;margin-bottom:8px}.lock-box p{color:var(--muted);line-height:1.6;max-width:620px;margin:0 auto 18px}.badge{display:inline-flex;align-items:center;justify-content:center;min-width:72px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.25px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1;white-space:nowrap}.badge-green{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.35);color:#86efac}.badge-red{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.35);color:#fca5a5}.badge-blue{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.35);color:#93c5fd}.badge-orange{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.35);color:#fcd34d}.badge-grey{background:rgba(156,163,175,.14);border-color:rgba(156,163,175,.35);color:#d1d5db}
-    .table-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:18px;background:rgba(17,24,39,.42)}
-    table{width:100%;border-collapse:collapse;min-width:950px}th,td{padding:13px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.35px;background:rgba(15,23,42,.72);position:sticky;top:0;z-index:1}td{color:var(--text)}tr:hover td{background:rgba(59,130,246,.06)}
-    .empty{padding:26px;text-align:center;color:var(--muted);line-height:1.5}.muted{color:var(--muted)!important}.money{font-weight:900;white-space:nowrap}
-    .loading{position:fixed;inset:0;background:rgba(2,6,23,.88);display:flex;align-items:center;justify-content:center;z-index:80;color:var(--text);text-align:center;padding:20px}.loading-box{background:rgba(30,41,59,.86);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.5);max-width:380px;width:100%}.loading-box h2{font-size:20px;margin-bottom:8px}.loading-box p{color:var(--muted);font-size:13px}.spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(148,163,184,.3);border-top-color:var(--blue);margin:0 auto 16px;animation:spin .8s linear infinite}
-    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);min-width:260px;max-width:calc(100% - 28px);background:var(--card);border:1px solid rgba(255,255,255,.08);color:var(--text);padding:13px 16px;border-radius:14px;box-shadow:0 18px 45px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s;z-index:90;text-align:center;font-size:14px}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    .hidden{display:none!important}
-    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:1150px){.summary-grid{grid-template-columns:repeat(3,1fr)}.chart-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:640px){body{padding:14px}.brand h1{font-size:21px}.summary-grid{grid-template-columns:repeat(2,1fr);gap:12px}.summary-card strong{font-size:21px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.filter-row{align-items:flex-start}.filter-actions{width:100%}.filter-btn{flex:1}.chart-box{min-height:300px}.kpi-grid{grid-template-columns:1fr}canvas{height:235px!important}}
+    .card{background:rgba(30,41,59,.78);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}
+    .card h3{color:#94a3b8;font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px}
+    .card-title-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .card-title-row h3{margin-bottom:0}
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .bottom-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:16px}
+    .value{font-size:26px;font-weight:bold}
+    .balance-value{font-size:30px;font-weight:bold;letter-spacing:.2px}
+    .symbol-line{color:#94a3b8;font-size:13px;margin-top:7px;font-weight:bold}
+    .small{color:#94a3b8;font-size:12px;margin-top:6px}
+    .profit{color:#22c55e}.loss{color:#ef4444}.info{color:#06b6d4}.warning{color:#f59e0b}
+    .status-green{color:#22c55e}.status-red{color:#ef4444}.status-blue{color:#3b82f6}.status-orange{color:#f59e0b}.status-gray{color:#9ca3af}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);gap:12px}
+    .row span:first-child{color:#94a3b8}
+    .row span:last-child{text-align:right;font-weight:bold}
+    .balance-row{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+    .eye-btn{width:34px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#111827;color:#94a3b8;cursor:pointer}
+    .eye-btn svg{width:17px;height:17px;stroke:#94a3b8}
+    .mini-signal{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(17,24,39,.85);border:1px solid rgba(255,255,255,.06);font-size:12px;font-weight:bold;color:#94a3b8}
+    .demo-badge{display:none;align-items:center;justify-content:center;padding:8px 10px;border-radius:999px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:12px;font-weight:bold;letter-spacing:.4px}
+    .dot{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,.9);animation:pulse 1.5s infinite}
+    .dot.connected{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.9)}
+    .dot.pause{background:#9ca3af;box-shadow:0 0 10px rgba(156,163,175,.55)}
+    .filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+    .filter button{border:none;padding:8px 12px;border-radius:10px;background:#111827;color:#94a3b8;cursor:pointer;border:1px solid rgba(255,255,255,.06)}
+    .filter button.active{background:#3b82f6;color:#fff}
+    .activity{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+    .activity strong{display:block;font-size:14px;margin-bottom:4px}
+    .activity span{color:#94a3b8;font-size:13px}
+    .analytics-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .analytics-head h3{margin-bottom:4px}
+    .analytics-sub{color:#94a3b8;font-size:12px}
+    .analytics-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+    .metric-box{background:linear-gradient(180deg,rgba(17,24,39,.86),rgba(15,23,42,.72));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:12px;position:relative;overflow:hidden}
+    .metric-box:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(59,130,246,.12),transparent 38%);pointer-events:none}
+    .metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;position:relative;z-index:1}
+    .metric-label{display:block;color:#94a3b8;font-size:11px;margin-bottom:0!important}
+    .metric-icon{width:24px;height:24px;border-radius:9px;display:inline-flex!important;align-items:center;justify-content:center;background:rgba(59,130,246,.12);border:1px solid rgba(255,255,255,.06);font-size:13px;color:#f8fafc;margin-bottom:0!important}
+    .metric-box strong{font-size:18px;letter-spacing:.2px;position:relative;z-index:1}
+    .chart-wrap{position:relative;background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.045);border-radius:16px;padding:12px}
+    .chart-wrap:before{content:"";position:absolute;left:12px;right:12px;top:12px;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.35),transparent)}
+    .chart-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:12px;pointer-events:none;padding:20px}
+    .chart-empty strong{display:block;color:#f8fafc;font-size:13px;margin-bottom:4px}
+    canvas{width:100%!important;max-height:330px;min-height:260px}
+    @keyframes pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @media(max-width:950px){.quick-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.analytics-metrics{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.value,.balance-value{font-size:24px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.row{font-size:14px}.card-title-row{align-items:flex-start}.mini-signal{width:100%;justify-content:center}.analytics-metrics{grid-template-columns:1fr}}
+  
+    /* v1.02 FUNCTION MERGE - keep old dashboard design, add new function cards */
+    .notice-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      margin-top:20px;
+    }
+    .notice-summary{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .notice-count{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:36px;
+      height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      background:rgba(59,130,246,.16);
+      color:#bfdbfe;
+      border:1px solid rgba(59,130,246,.28);
+    }
+    .notice-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .notice{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(15,23,42,.58);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .notice.green{border-color:rgba(34,197,94,.24);background:rgba(34,197,94,.07);}
+    .notice.orange{border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.08);}
+    .notice.red{border-color:rgba(239,68,68,.26);background:rgba(239,68,68,.08);}
+    .notice.grey{border-color:rgba(148,163,184,.20);background:rgba(148,163,184,.07);}
+    .notice-icon{
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      font-size:13px;
+      font-weight:900;
+      color:#f8fafc;
+      background:rgba(59,130,246,.35);
+    }
+    .notice.red .notice-icon{background:rgba(239,68,68,.75);}
+    .notice.orange .notice-icon{background:rgba(245,158,11,.75);}
+    .notice.green .notice-icon{background:rgba(34,197,94,.75);}
+    .notice-title{
+      font-size:13px;
+      font-weight:800;
+      color:#f8fafc;
+      margin-bottom:4px;
+    }
+    .notice-msg,.notice-time{
+      font-size:12px;
+      color:#94a3b8;
+      line-height:1.45;
+    }
+    .license-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .mini-info{
+      padding:12px;
+      border-radius:14px;
+      background:rgba(15,23,42,.55);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .mini-info span{
+      display:block;
+      font-size:11px;
+      color:#94a3b8;
+      margin-bottom:6px;
+    }
+    .mini-info strong{
+      font-size:13px;
+      color:#f8fafc;
+      word-break:break-word;
+    }
+    .empty{
+      padding:14px;
+      border-radius:14px;
+      color:#94a3b8;
+      background:rgba(15,23,42,.55);
+      border:1px dashed rgba(255,255,255,.10);
+      font-size:13px;
+    }
+    @media(max-width:900px){
+      .notice-grid,.license-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
-<div class="loading" id="loadingScreen"><div class="loading-box"><div class="spinner"></div><h2>Loading Analytics</h2><p>TradeLink Manager is validating your account and loading realtime history.</p></div></div>
-
-<div class="container" id="app" style="display:none;">
+<div class="container">
   <div class="topbar">
-    <div class="brand"><h1>TRADELINK MANAGER</h1><p>DARK TRADING PRO Advanced Analytics Graph v1.02</p></div>
-    <div class="chip-row"><div class="package-chip" id="packageChip">PACKAGE</div><div class="live-chip"><span class="dot"></span> REALTIME ANALYTICS</div></div>
+    <div class="brand">
+      <h1>TRADELINK MANAGER</h1>
+      <p>DARK TRADING PRO Dashboard MVP v1.00</p>
+    </div>
   </div>
 
   <div class="nav">
-    <a href="dashboard.html">Dashboard</a>
     <a href="controlpanel.html">Control Panel</a>
     <a href="setting.html">Setting</a>
-    <a href="analytics.html">Analytics</a>
-    <button class="logoutBtn" onclick="logoutClient()">Logout</button>
+    <button class="logoutBtn" onclick="logout()">Logout</button>
   </div>
 
-  <div class="card lock-box" id="basicLock">
-    <div class="lock-icon">🔒</div>
-    <h2>PRO Analytics Locked</h2>
-    <p>Advanced analytics graph is available for PRO package only. BASIC account can still use Dashboard, Control Panel basic command, and Setting page.</p>
-    <span class="badge badge-orange">PRO FEATURE</span>
+  <div class="card">
+    <div class="card-title-row">
+      <h3>Account Information</h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+        <span class="demo-badge" id="demoBadge">DEMO MODE</span>
+        <div class="mini-signal">
+          <span class="dot" id="signalDot"></span>
+          <span id="mt5Signal">DISCONNECTED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row"><span>Client Name</span><span id="clientName">-</span></div>
+    <div class="row"><span>Client ID</span><span id="clientIdView">-</span></div>
+    <div class="row"><span>Package</span><span id="clientPackage">-</span></div>
+    <div class="row"><span>Status</span><span id="clientStatus">-</span></div>
+    <div class="row"><span>EA Status</span><span id="eaStatus">DISCONNECTED</span></div>
+    <div class="row">
+      <span>Balance</span>
+      <span class="balance-row">
+        <span class="balance-value" id="balance">*****</span>
+        <button class="eye-btn" onclick="toggleBalance()" id="eyeBtn" title="Show / Hide Balance"></button>
+      </span>
+    </div>
+    <div class="small" id="lastUpdate">Last update: -</div>
   </div>
 
-  <div id="analyticsContent">
-    <div class="summary-grid">
-      <div class="summary-card"><span>Balance</span><strong id="balanceValue">0.00</strong></div>
-      <div class="summary-card"><span>Equity</span><strong id="equityValue" class="status-cyan">0.00</strong></div>
-      <div class="summary-card"><span>Floating P/L</span><strong id="floatingValue">0.00</strong></div>
-      <div class="summary-card"><span>Profit Today</span><strong id="profitTodayValue">0.00</strong></div>
-      <div class="summary-card"><span>Drawdown</span><strong id="drawdownValue" class="status-orange">0.00</strong></div>
-      <div class="summary-card"><span>Total Trades</span><strong id="totalTradesValue" class="status-blue">0</strong></div>
+  <div class="quick-grid">
+    <div class="card">
+      <h3>Floating P/L</h3>
+      <div class="value" id="floating">0.00</div>
+      <div class="symbol-line" id="activeSymbols">-</div>
+      <div class="small">Open trade profit/loss</div>
     </div>
 
     <div class="card">
-      <div class="filter-row">
-        <div><h3>Advanced Analytics Graph</h3><p class="muted" id="rangeInfo">Realtime history source: TradeLink/clients/{clientId}/history</p></div>
-        <div class="filter-actions">
-          <button class="filter-btn active" id="filterDaily" onclick="setFilter('daily')">Daily</button>
-          <button class="filter-btn" id="filterWeekly" onclick="setFilter('weekly')">Weekly</button>
-          <button class="filter-btn" id="filterMonthly" onclick="setFilter('monthly')">Monthly</button>
+      <h3>Trading Statistics</h3>
+      <div class="row"><span>Buy Count</span><span class="profit" id="buyCount">0</span></div>
+      <div class="row"><span>Sell Count</span><span class="loss" id="sellCount">0</span></div>
+      <div class="row"><span>Total Trades</span><span id="totalTrades">0</span></div>
+    </div>
+  </div>
+
+
+  <div class="notice-grid">
+    <div class="card">
+      <div class="card-title-row">
+        <h3>Notification Center</h3>
+        <div class="notice-summary">
+          <span class="notice-count" id="notificationCount">0</span>
+          <span class="status-blue" id="alertBadge">0 ALERTS</span>
+        </div>
+      </div>
+      <div class="notice-list" id="notificationList">
+        <div class="empty">Waiting for realtime dashboard data.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-row">
+        <h3>License & MT5 Detail</h3>
+        <span class="status-blue" id="connectBadge">CHECKING</span>
+      </div>
+
+      <div class="license-grid">
+        <div class="mini-info"><span>Account Login</span><strong id="accountLogin">-</strong></div>
+        <div class="mini-info"><span>Equity</span><strong id="equityView">0.00</strong></div>
+        <div class="mini-info"><span>Broker</span><strong id="broker">-</strong></div>
+        <div class="mini-info"><span>Server</span><strong id="server">-</strong></div>
+        <div class="mini-info"><span>Expiry Date</span><strong id="expiryDate">-</strong></div>
+        <div class="mini-info"><span>Expiry Remaining</span><strong id="expiryRemaining">-</strong></div>
+        <div class="mini-info"><span>Device Lock</span><strong id="deviceLock">-</strong></div>
+        <div class="mini-info"><span>Device ID</span><strong id="deviceId">-</strong></div>
+        <div class="mini-info"><span>Last Login</span><strong id="lastLogin">-</strong></div>
+        <div class="mini-info"><span>Realtime Status</span><strong id="realtimeBadge">LIVE</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-title-row">
+      <h3>Smart Connect Flow</h3>
+      <span class="status-blue">v1.02</span>
+    </div>
+    <div class="notice-list" id="connectFlowList">
+      <div class="empty">Checking client, license and EA connection flow.</div>
+    </div>
+  </div>
+
+
+  <div class="bottom-grid">
+    <div class="card">
+      <div class="analytics-head">
+        <div>
+          <h3>Trading Analytics</h3>
+          <div class="analytics-sub">Performance shown in percentage (%)</div>
+        </div>
+        <div class="filter">
+          <button class="active" onclick="changeAnalytics('daily', this)">Daily</button>
+          <button onclick="changeAnalytics('weekly', this)">Weekly</button>
+          <button onclick="changeAnalytics('monthly', this)">Monthly</button>
         </div>
       </div>
 
-      <div class="kpi-grid">
-        <div class="kpi-card"><span>Net Balance Change</span><strong id="netBalanceChange">0.00</strong></div>
-        <div class="kpi-card"><span>Best Profit Day</span><strong id="bestProfitDay" class="status-green">0.00</strong></div>
-        <div class="kpi-card"><span>Worst Floating Day</span><strong id="worstFloatingDay" class="status-red">0.00</strong></div>
-        <div class="kpi-card"><span>Max Drawdown</span><strong id="maxDrawdown" class="status-orange">0.00</strong></div>
+      <div class="analytics-metrics">
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Balance Growth</span><span class="metric-icon">↗</span></div>
+          <strong id="balanceGrowthPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Floating P/L</span><span class="metric-icon">≈</span></div>
+          <strong id="floatingPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Profit Today</span><span class="metric-icon">✓</span></div>
+          <strong id="profitTodayPct">0.00%</strong>
+        </div>
+        <div class="metric-box">
+          <div class="metric-top"><span class="metric-label">Drawdown</span><span class="metric-icon">!</span></div>
+          <strong id="drawdownPct">0.00%</strong>
+        </div>
       </div>
 
-      <div class="chart-grid">
-        <div class="chart-box wide"><div class="chart-head"><strong>Balance vs Equity</strong><span id="balanceEquityTrend">-</span></div><canvas id="balanceEquityChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Balance</strong><span id="balanceTrend">-</span></div><canvas id="balanceChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Equity</strong><span id="equityTrend">-</span></div><canvas id="equityChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Floating P/L</strong><span id="floatingTrend">-</span></div><canvas id="floatingChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Drawdown</strong><span id="drawdownTrend">-</span></div><canvas id="drawdownChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Profit Today</strong><span id="profitTrend">-</span></div><canvas id="profitChart"></canvas></div>
-        <div class="chart-box"><div class="chart-head"><strong>Total Trades</strong><span id="tradeTrend">-</span></div><canvas id="tradeChart"></canvas></div>
+      <div class="chart-wrap">
+        <canvas id="historyChart"></canvas>
+        <div class="chart-empty" id="chartEmpty"><strong>No analytics data yet</strong><span>Waiting for EA history update from Firebase.</span></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title-row"><h3>History Data</h3><span class="badge badge-blue" id="historyCount">0 ROWS</span></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Balance</th><th>Equity</th><th>Floating P/L</th><th>Profit Today</th><th>Drawdown</th><th>Total Trades</th></tr></thead><tbody id="historyTable"><tr><td colspan="7" class="empty">Loading history...</td></tr></tbody></table></div>
+      <h3>Recent Activity</h3>
+      <div class="activity"><strong id="activitySignal">DISCONNECTED</strong><span>Current MT5 connection status</span></div>
+      <div class="activity"><strong id="activityUpdate">-</strong><span>Last Firebase update</span></div>
+      <div class="activity"><strong id="activityClient">-</strong><span>Active login client</span></div>
+      <div class="activity"><strong id="activityPackage">-</strong><span>Current account package</span></div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">Analytics updated.</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = { databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+  const firebaseConfig = {
+    databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
+
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const clientId = localStorage.getItem("clientId") || localStorage.getItem("clientKey") || "";
-  let currentPackage = "BASIC";
-  let currentFilter = "daily";
-  let latestHistory = {};
-  let latestMonitor = {};
-  let charts = {};
-
-  function showToast(message){ const toast=document.getElementById("toast"); toast.innerText=message; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),2300); }
-  function setText(id,value){ const el=document.getElementById(id); if(el) el.innerText = value ?? "-"; }
-  function num(value){ return Number(value || 0); }
-  function money(value){ return num(value).toFixed(2); }
-  function escapeHtml(value){ return String(value ?? "-").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[c])); }
-  function todayKey(){ const d=new Date(); const pad=n=>String(n).padStart(2,"0"); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
-  function dateFromKey(key){ const d=new Date(key + "T00:00:00"); return isNaN(d.getTime()) ? null : d; }
-  function daysAgo(limit){ const d=new Date(); d.setDate(d.getDate()-limit); d.setHours(0,0,0,0); return d; }
-  function currencySymbol(){ const c=String(latestMonitor.account_currency||"").toUpperCase(); if(latestMonitor.currency_symbol) return latestMonitor.currency_symbol; if(c==="USD") return "$"; if(c==="MYR") return "RM"; return ""; }
-  function formatCurrency(value){ const symbol=currencySymbol(); const v=money(value); if(symbol==="$") return "$"+v; if(symbol) return symbol+" "+v; return v; }
-
-  async function init(){
-    if(!clientId){ window.location.href="../index.html"; return; }
-    try{
-      const [profileSnap,userSnap] = await Promise.all([
-        get(ref(db,"TradeLink/clients/"+clientId+"/profile")),
-        get(ref(db,"TradeLink/users/"+clientId))
-      ]);
-      const profile=profileSnap.val()||{}; const user=userSnap.val()||{};
-      currentPackage = String(profile.package || user.package || "BASIC").toUpperCase();
-      renderPackage();
-      enableShell();
-      if(currentPackage !== "PRO"){
-        document.getElementById("basicLock").style.display="block";
-        document.getElementById("analyticsContent").classList.add("hidden");
-        return;
-      }
-      watchData();
-    }catch(e){ console.error(e); showToast("Failed to load analytics access."); enableShell(); }
+  const clientId = localStorage.getItem("clientId");
+  if(!clientId){
+    window.location.href="../index.html";
   }
 
-  function renderPackage(){
-    const chip=document.getElementById("packageChip"); chip.innerText=currentPackage; chip.className="package-chip " + (currentPackage === "PRO" ? "pro" : "basic");
-  }
-  function enableShell(){ document.getElementById("loadingScreen").style.display="none"; document.getElementById("app").style.display="block"; }
+  document.getElementById("clientIdView").innerText = clientId;
+  document.getElementById("activityClient").innerText = clientId;
 
-  function watchData(){
-    onValue(ref(db,"TradeLink/clients/"+clientId+"/monitor"),(snap)=>{ latestMonitor=snap.val()||{}; renderSummary(); });
-    onValue(ref(db,"TradeLink/clients/"+clientId+"/history"),(snap)=>{ latestHistory=snap.val()||{}; renderAll(); });
-  }
-
-  function normalizeHistory(){
-    return Object.keys(latestHistory||{}).map(key=>{
-      const row=latestHistory[key]||{};
-      return { date:key, dateObj:dateFromKey(key), balance:num(row.balance), equity:num(row.equity), floating_pl:num(row.floating_pl || row.floating), profit_today:num(row.profit_today), drawdown:num(row.drawdown), total_trades:num(row.total_trades) };
-    }).filter(r=>r.dateObj).sort((a,b)=>a.dateObj-b.dateObj);
+  const isDemo = localStorage.getItem("isDemo") === "true";
+  const demoBadge = document.getElementById("demoBadge");
+  if(demoBadge && isDemo){
+    demoBadge.style.display = "inline-flex";
   }
 
-  function filteredRows(){
-    const rows=normalizeHistory();
-    if(currentFilter === "daily") return rows.filter(r=>r.dateObj >= daysAgo(30));
-    if(currentFilter === "weekly") return rows.filter(r=>r.dateObj >= daysAgo(90));
-    return rows.filter(r=>r.dateObj >= daysAgo(365));
+  const profileRef = ref(db,"TradeLink/clients/"+clientId+"/profile");
+  const monitorRef = ref(db,"TradeLink/clients/"+clientId+"/monitor");
+  const historyRef = ref(db,"TradeLink/clients/"+clientId+"/history");
+  const licenseRef = ref(db,"TradeLink/clients/"+clientId+"/license");
+  const userRef = ref(db,"TradeLink/users/"+clientId);
+
+  let rawHistory = {};
+  let analyticsMode = "daily";
+  let balanceValue = 0;
+  let balanceVisible = false;
+  let currencySymbol = "";
+  let lastMonitorPoint = null;
+  let currentProfile = {};
+  let currentMonitor = {};
+  let currentLicense = {};
+
+  const eyeOpenIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+  const eyeClosedIcon = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-6.94"></path><path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"></path><path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"></path><path d="M1 1l22 22"></path></svg>`;
+
+  function num(value){
+    return Number(value || 0);
   }
 
-  function renderAll(){ renderSummary(); renderCharts(); renderTable(); }
-
-  function latestRow(){ const rows=normalizeHistory(); return rows.length ? rows[rows.length-1] : null; }
-  function renderSummary(){
-    const row=latestRow() || {};
-    const balance = latestMonitor.balance ?? row.balance ?? 0;
-    const equity = latestMonitor.equity ?? row.equity ?? 0;
-    const floating = latestMonitor.floating_pl ?? row.floating_pl ?? 0;
-    const profitToday = latestMonitor.profit_today ?? row.profit_today ?? 0;
-    const drawdown = latestMonitor.drawdown ?? row.drawdown ?? 0;
-    const trades = latestMonitor.total_trades ?? row.total_trades ?? 0;
-    setText("balanceValue",formatCurrency(balance));
-    setText("equityValue",formatCurrency(equity));
-    setText("floatingValue",formatCurrency(floating));
-    setText("profitTodayValue",formatCurrency(profitToday));
-    setText("drawdownValue",money(drawdown));
-    setText("totalTradesValue",trades);
-    document.getElementById("floatingValue").className = num(floating) >= 0 ? "status-green" : "status-red";
-    document.getElementById("profitTodayValue").className = num(profitToday) >= 0 ? "status-green" : "status-red";
+  function money(value){
+    return num(value).toFixed(2);
   }
 
-  function trendText(rows,key){
-    if(rows.length < 2) return "Not enough data";
-    const first=num(rows[0][key]); const last=num(rows[rows.length-1][key]); const diff=last-first; const sign=diff>=0?"+":"";
-    return sign + money(diff);
+  function pct(value){
+    return num(value).toFixed(2) + "%";
   }
 
-  function baseChartOptions(showLegend=false){
-    const grid = "rgba(148,163,184,.12)";
-    return { responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false}, plugins:{legend:{display:showLegend, labels:{color:"#cbd5e1", boxWidth:12}}, tooltip:{mode:"index",intersect:false}}, scales:{x:{ticks:{color:"#94a3b8",maxRotation:0,autoSkip:true},grid:{color:grid}}, y:{ticks:{color:"#94a3b8"},grid:{color:grid}}} };
-  }
-
-  function chartConfig(label, rows, key, color="rgba(59,130,246,.9)"){
-    return {
-      type:"line",
-      data:{ labels:rows.map(r=>r.date), datasets:[{ label, data:rows.map(r=>r[key]), tension:.35, borderWidth:2, pointRadius:2, fill:true, backgroundColor:"rgba(59,130,246,.08)", borderColor:color, pointBackgroundColor:"rgba(248,250,252,.95)" }] },
-      options:baseChartOptions(false)
-    };
-  }
-
-  function balanceEquityConfig(rows){
-    return {
-      type:"line",
-      data:{ labels:rows.map(r=>r.date), datasets:[
-        { label:"Balance", data:rows.map(r=>r.balance), tension:.35, borderWidth:2, pointRadius:2, fill:false, borderColor:"rgba(59,130,246,.95)", pointBackgroundColor:"rgba(248,250,252,.95)" },
-        { label:"Equity", data:rows.map(r=>r.equity), tension:.35, borderWidth:2, pointRadius:2, fill:false, borderColor:"rgba(6,182,212,.95)", pointBackgroundColor:"rgba(248,250,252,.95)" }
-      ]},
-      options:baseChartOptions(true)
-    };
-  }
-
-  function renderCharts(){
-    const rows=filteredRows();
-    setText("historyCount",rows.length + " ROWS");
-    setText("rangeInfo", currentFilter.toUpperCase()+" view • Source: TradeLink/clients/"+clientId+"/history");
-    setText("balanceTrend",trendText(rows,"balance"));
-    setText("equityTrend",trendText(rows,"equity"));
-    setText("floatingTrend",trendText(rows,"floating_pl"));
-    setText("drawdownTrend",trendText(rows,"drawdown"));
-    setText("profitTrend",trendText(rows,"profit_today"));
-    setText("tradeTrend",trendText(rows,"total_trades"));
-    setText("balanceEquityTrend", rows.length < 2 ? "Not enough data" : "Balance " + trendText(rows,"balance") + " • Equity " + trendText(rows,"equity"));
-    renderKpi(rows);
-
-    if(charts.balanceEquityChart) charts.balanceEquityChart.destroy();
-    const combo=document.getElementById("balanceEquityChart");
-    if(combo) charts.balanceEquityChart=new Chart(combo, balanceEquityConfig(rows));
-
-    const map={
-      balanceChart:["Balance", "balance", "rgba(59,130,246,.9)"],
-      equityChart:["Equity","equity", "rgba(6,182,212,.9)"],
-      floatingChart:["Floating P/L","floating_pl", "rgba(34,197,94,.9)"],
-      drawdownChart:["Drawdown","drawdown", "rgba(245,158,11,.9)"],
-      profitChart:["Profit Today","profit_today", "rgba(34,197,94,.9)"],
-      tradeChart:["Total Trades","total_trades", "rgba(59,130,246,.9)"]
-    };
-    Object.keys(map).forEach(id=>{
-      const ctx=document.getElementById(id);
-      if(!ctx) return;
-      if(charts[id]) charts[id].destroy();
-      charts[id]=new Chart(ctx, chartConfig(map[id][0], rows, map[id][1], map[id][2]));
-    });
-  }
-
-  function renderKpi(rows){
-    if(!rows.length){
-      setText("netBalanceChange",formatCurrency(0)); setText("bestProfitDay",formatCurrency(0)); setText("worstFloatingDay",formatCurrency(0)); setText("maxDrawdown",money(0)); return;
+  function pctClass(value, invert=false){
+    const n = num(value);
+    if(invert){
+      return n > 0 ? "loss" : "profit";
     }
-    const first=rows[0], last=rows[rows.length-1];
-    const net=num(last.balance)-num(first.balance);
-    const best=Math.max(...rows.map(r=>num(r.profit_today)));
-    const worst=Math.min(...rows.map(r=>num(r.floating_pl)));
-    const maxDd=Math.max(...rows.map(r=>num(r.drawdown)));
-    setText("netBalanceChange",formatCurrency(net));
-    setText("bestProfitDay",formatCurrency(best));
-    setText("worstFloatingDay",formatCurrency(worst));
-    setText("maxDrawdown",money(maxDd));
-    document.getElementById("netBalanceChange").className = net >= 0 ? "status-green" : "status-red";
+    return n >= 0 ? "profit" : "loss";
   }
 
-  function renderTable(){
-    const rows=filteredRows().slice().reverse();
-    const tbody=document.getElementById("historyTable");
-    if(rows.length===0){ tbody.innerHTML=`<tr><td colspan="7" class="empty">No history data found for selected range.</td></tr>`; return; }
-    tbody.innerHTML=rows.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td><span class="money">${escapeHtml(formatCurrency(r.balance))}</span></td><td><span class="money status-cyan">${escapeHtml(formatCurrency(r.equity))}</span></td><td><span class="money ${r.floating_pl>=0?'status-green':'status-red'}">${escapeHtml(formatCurrency(r.floating_pl))}</span></td><td><span class="money ${r.profit_today>=0?'status-green':'status-red'}">${escapeHtml(formatCurrency(r.profit_today))}</span></td><td><span class="money status-orange">${escapeHtml(money(r.drawdown))}</span></td><td><span class="money status-blue">${escapeHtml(r.total_trades)}</span></td></tr>`).join("");
+  function setMetric(id,value,invert=false){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerText = pct(value);
+    el.className = pctClass(value,invert);
   }
 
-  window.setFilter = function(filter){
-    currentFilter = filter;
-    ["Daily","Weekly","Monthly"].forEach(x=>document.getElementById("filter"+x).classList.toggle("active", filter===x.toLowerCase()));
-    renderAll();
+  function setText(id,value){
+    const el = document.getElementById(id);
+    if(el){
+      el.innerText = value ?? "-";
+    }
+  }
+
+
+  function escapeHtml(value){
+    return String(value ?? "-").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;","\"":"&quot;"}[c]));
+  }
+
+  function daysUntil(dateStr){
+    if(!dateStr) return null;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const d = new Date(dateStr + "T00:00:00");
+    if(Number.isNaN(d.getTime())) return null;
+    return Math.ceil((d - today) / 86400000);
+  }
+
+  function expiryLabel(expiryDate){
+    const d = daysUntil(expiryDate);
+    if(d === null) return {text:"NO EXPIRY", type:"gray", days:null};
+    if(d < 0) return {text:"EXPIRED", type:"red", days:d};
+    if(d < 7) return {text:d + " days left", type:"orange", days:d};
+    return {text:d + " days left", type:"green", days:d};
+  }
+
+  function addNotice(list, level, title, msg, time="-"){
+    list.push({level,title,msg,time});
+  }
+
+  function renderNotice(list){
+    setText("notificationCount", list.length);
+    setText("alertBadge", list.length + (list.length === 1 ? " ALERT" : " ALERTS"));
+    const box = document.getElementById("notificationList");
+    if(!box) return;
+
+    if(!list.length){
+      box.innerHTML = `<div class="empty">System normal. No important notification detected.</div>`;
+      return;
+    }
+
+    box.innerHTML = list.map(n=>`
+      <div class="notice ${escapeHtml(n.level)}">
+        <div class="notice-icon">${n.level==="red"?"!":n.level==="orange"?"⚠":n.level==="green"?"✓":"i"}</div>
+        <div>
+          <div class="notice-title">${escapeHtml(n.title)}</div>
+          <div class="notice-msg">${escapeHtml(n.msg)}</div>
+          <div class="notice-time">${escapeHtml(n.time || "-")}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderConnectFlow(){
+    const monitor = currentMonitor || {};
+    const license = currentLicense || {};
+    const profile = currentProfile || {};
+    const mt5 = String(monitor.mt5_signal || "DISCONNECTED").toUpperCase();
+    const login = monitor.account_login || "";
+    const expiry = expiryLabel(license.expiryDate || "");
+    const steps = [];
+
+    if(String(profile.status||"").toLowerCase() !== "active"){
+      steps.push({level:"red", title:"Client account inactive", msg:"Admin perlu aktifkan status client sebelum sambungan penuh digunakan."});
+    }else{
+      steps.push({level:"green", title:"Client account active", msg:"Profile status active."});
+    }
+
+    if(!license.expiryDate){
+      steps.push({level:"orange", title:"License expiry missing", msg:"Tetapkan expiryDate untuk enable commercial license tracking."});
+    }else if(expiry.days < 0){
+      steps.push({level:"red", title:"License expired", msg:"Renew license sebelum client terus gunakan system."});
+    }else{
+      steps.push({level:"green", title:"License valid", msg:"Expiry remaining: " + expiry.text});
+    }
+
+    if(!login || Number(login) === 0){
+      steps.push({level:"orange", title:"MT5 account not detected", msg:"Pastikan EA sudah attach pada MT5 dan clientId betul."});
+    }else{
+      steps.push({level:"green", title:"MT5 account detected", msg:"Account login: " + login});
+    }
+
+    if(mt5 === "CONNECTED"){
+      steps.push({level:"green", title:"EA connected", msg:"Realtime monitor berjalan normal."});
+    }else if(mt5 === "EA_PAUSE"){
+      steps.push({level:"orange", title:"EA paused", msg:"Semak Algo Trading / Expert Advisor status di MT5."});
+    }else{
+      steps.push({level:"red", title:"EA disconnected", msg:"Buka MT5, attach EA, semak internet/VPS dan Firebase setup."});
+    }
+
+    const box = document.getElementById("connectFlowList");
+    if(!box) return;
+    box.innerHTML = steps.map(s=>`
+      <div class="notice ${escapeHtml(s.level)}">
+        <div class="notice-icon">${s.level==="red"?"!":s.level==="orange"?"⚠":"✓"}</div>
+        <div><div class="notice-title">${escapeHtml(s.title)}</div><div class="notice-msg">${escapeHtml(s.msg)}</div></div>
+      </div>
+    `).join("");
+  }
+
+  function updateV102Panels(){
+    const monitor = currentMonitor || {};
+    const license = currentLicense || {};
+    const profile = currentProfile || {};
+    const notices = [];
+    const floating = num(monitor.floating_pl || monitor.floating);
+    const mt5 = String(monitor.mt5_signal || "DISCONNECTED").toUpperCase();
+    const expiry = expiryLabel(license.expiryDate || "");
+
+    setText("accountLogin", monitor.account_login || "-");
+    setText("broker", monitor.broker || "-");
+    setText("server", monitor.server || "-");
+    setText("equityView", formatMoneyWithSymbol(monitor.equity || 0));
+    setText("expiryDate", license.expiryDate || "-");
+    setText("expiryRemaining", expiry.text);
+    setText("deviceLock", license.deviceLock === true ? "TRUE" : "FALSE");
+    setText("deviceId", license.deviceId || "-");
+    setText("lastLogin", license.lastLogin || "-");
+    setText("realtimeBadge", mt5 === "CONNECTED" ? "LIVE" : mt5);
+
+    const expiryEl = document.getElementById("expiryRemaining");
+    if(expiryEl){
+      expiryEl.className = expiry.type === "red" ? "status-red" : expiry.type === "orange" ? "status-orange" : expiry.type === "green" ? "status-green" : "status-gray";
+    }
+
+    const connectBadge = document.getElementById("connectBadge");
+    if(connectBadge){
+      if(mt5 === "CONNECTED"){
+        connectBadge.className = "status-green";
+        connectBadge.innerText = "CONNECTED";
+      }else if(mt5 === "EA_PAUSE"){
+        connectBadge.className = "status-gray";
+        connectBadge.innerText = "EA PAUSE";
+      }else{
+        connectBadge.className = "status-red";
+        connectBadge.innerText = "DISCONNECTED";
+      }
+    }
+
+    if(mt5 === "DISCONNECTED") addNotice(notices,"red","EA disconnected","MT5 EA tidak menghantar signal CONNECTED. Semak VPS, internet, Algo Trading dan EA input.", monitor.last_update || "-");
+    if(mt5 === "EA_PAUSE") addNotice(notices,"orange","EA pause detected","EA dikesan pause. Semak Auto/Algo Trading dan Expert Advisor permission.", monitor.last_update || "-");
+    if(!monitor.account_login || Number(monitor.account_login) === 0) addNotice(notices,"orange","No account connected","Account login belum dikesan daripada MT5.", monitor.last_update || "-");
+    if(expiry.days === null) addNotice(notices,"orange","No license expiry","License expiryDate belum ditetapkan.", "-");
+    else if(expiry.days < 0) addNotice(notices,"red","License expired","License client telah tamat tempoh pada " + license.expiryDate + ".", license.expiryDate);
+    else if(expiry.days < 7) addNotice(notices,"orange","License near expiry","License akan tamat dalam " + expiry.days + " hari.", license.expiryDate);
+    if(license.deviceLock === true && !license.deviceId) addNotice(notices,"orange","Device lock waiting binding","Device Lock aktif tetapi deviceId masih kosong. Binding akan berlaku bila EA/client login.", license.lastLogin || "-");
+    if(floating < 0) addNotice(notices,"orange","Floating loss detected","Floating P/L semasa negatif: " + formatMoneyWithSymbol(floating), monitor.last_update || "-");
+    if(String(profile.status||"").toLowerCase() !== "active") addNotice(notices,"red","Client inactive","Status client bukan active. Akses mungkin terganggu.", "-");
+
+    renderNotice(notices);
+    renderConnectFlow();
+  }
+
+
+  function normalizeEAStatus(value){
+    const signal = String(value || "DISCONNECTED").toUpperCase();
+
+    if(signal === "CONNECTED"){
+      return {text:"CONNECTED", className:"status-green", dotClass:"connected"};
+    }
+
+    if(signal === "EA_PAUSE"){
+      return {text:"EA PAUSE", className:"status-gray", dotClass:"pause"};
+    }
+
+    return {text:"DISCONNECTED", className:"status-red", dotClass:""};
+  }
+
+  function getCurrencySymbol(data){
+    const accountCurrency = String(data.account_currency || "").toUpperCase();
+    const firebaseSymbol = data.currency_symbol || "";
+
+    if(accountCurrency === "USDC"){
+      return "USDC";
+    }
+
+    if(firebaseSymbol){
+      return firebaseSymbol;
+    }
+
+    if(accountCurrency === "USD"){
+      return "$";
+    }
+
+    if(accountCurrency === "MYR"){
+      return "RM";
+    }
+
+    if(accountCurrency){
+      return accountCurrency;
+    }
+
+    return "";
+  }
+
+  function formatMoneyWithSymbol(value){
+    const amount = money(value);
+
+    if(currencySymbol === "RM"){
+      return "RM " + amount;
+    }
+
+    if(currencySymbol === "$"){
+      return "$" + amount;
+    }
+
+    if(currencySymbol){
+      return currencySymbol + " " + amount;
+    }
+
+    return amount;
+  }
+
+  function renderBalance(){
+    document.getElementById("balance").innerText = balanceVisible ? formatMoneyWithSymbol(balanceValue) : "*****";
+    document.getElementById("eyeBtn").innerHTML = balanceVisible ? eyeOpenIcon : eyeClosedIcon;
+  }
+
+  window.toggleBalance = function(){
+    balanceVisible = !balanceVisible;
+    renderBalance();
+
+
+  async function validateSession(){
+    const sessionToken = localStorage.getItem("sessionToken") || localStorage.getItem("clientSessionToken") || "";
+    if(!clientId){
+      window.location.href="../index.html";
+      return false;
+    }
+
+    if(!sessionToken) return true;
+
+    try{
+      const snap = await get(userRef);
+      const userData = snap.val() || {};
+      if(userData.sessionToken && userData.sessionToken !== sessionToken){
+        localStorage.clear();
+        window.location.href="../index.html";
+        return false;
+      }
+      return true;
+    }catch(error){
+      console.error("SESSION VALIDATION ERROR", error);
+      return true;
+    }
+  }
+
+  validateSession();
+
+
   };
-  window.logoutClient = function(){ localStorage.clear(); window.location.href="../index.html"; };
 
-  init();
+  renderBalance();
+
+  onValue(profileRef,(snapshot)=>{
+    const data = snapshot.val() || {};
+    currentProfile = data;
+    const packageValue = (data.package || "-").toUpperCase();
+    const statusValue = data.status || "-";
+
+    setText("clientName",data.name || "-");
+    setText("clientPackage",packageValue);
+    setText("clientStatus",statusValue);
+
+    document.getElementById("clientPackage").className = packageValue === "PRO" ? "status-green" : "status-blue";
+    document.getElementById("clientStatus").className = statusValue === "active" ? "status-green" : "status-red";
+
+    setText("activityPackage",packageValue);
+    updateV102Panels();
+  });
+
+  onValue(monitorRef,(snapshot)=>{
+    const data = snapshot.val() || {};
+    currentMonitor = data;
+
+    currencySymbol = getCurrencySymbol(data);
+    balanceValue = num(data.balance);
+    renderBalance();
+
+    const floating = num(data.floating_pl || data.floating);
+    const signal = data.mt5_signal || "DISCONNECTED";
+    const eaStatus = normalizeEAStatus(signal);
+    const activeSymbols = data.active_symbols || "-";
+
+    const floatingEl = document.getElementById("floating");
+    floatingEl.innerText = formatMoneyWithSymbol(floating);
+    floatingEl.className = "value " + (floating >= 0 ? "profit" : "loss");
+
+    setText("activeSymbols",activeSymbols);
+    setText("mt5Signal",eaStatus.text);
+    setText("eaStatus",eaStatus.text);
+    setText("activitySignal",eaStatus.text);
+
+    document.getElementById("mt5Signal").className = eaStatus.className;
+    document.getElementById("eaStatus").className = eaStatus.className;
+    document.getElementById("activitySignal").className = eaStatus.className;
+
+    const signalDot = document.getElementById("signalDot");
+    signalDot.classList.remove("connected","pause");
+    if(eaStatus.dotClass){
+      signalDot.classList.add(eaStatus.dotClass);
+    }
+
+    const lastUpdate = data.last_update || "-";
+    setText("lastUpdate","Last update: " + lastUpdate);
+    setText("activityUpdate",lastUpdate);
+
+    const buy = num(data.buy_count);
+    const sell = num(data.sell_count);
+    const total = data.total_trades !== undefined ? num(data.total_trades) : buy + sell;
+
+    setText("buyCount",buy);
+    setText("sellCount",sell);
+    setText("totalTrades",total);
+
+    lastMonitorPoint = {
+      balance: balanceValue,
+      floating_pl: floating,
+      label: lastUpdate !== "-" ? lastUpdate : "Live"
+    };
+
+    if(Object.keys(rawHistory).length === 0){
+      renderHistory();
+    }
+
+    updateV102Panels();
+  });
+
+
+  onValue(licenseRef,(snapshot)=>{
+    currentLicense = snapshot.val() || {};
+    updateV102Panels();
+  },(error)=>{
+    console.error("LICENSE READ ERROR", error);
+    currentLicense = {};
+    updateV102Panels();
+  });
+
+
+  function setChartEmpty(show){
+    const el = document.getElementById("chartEmpty");
+    if(el){
+      el.style.display = show ? "flex" : "none";
+    }
+  }
+
+  const historyCanvas = document.getElementById("historyChart");
+  const historyChart = new Chart(historyCanvas,{
+    type:"line",
+    data:{
+      labels:[],
+      datasets:[
+        {label:"Balance Growth %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Floating P/L %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6},
+        {label:"Drawdown %",data:[],borderWidth:2,tension:.35,pointRadius:4,pointHoverRadius:6}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:"index",intersect:false},
+      plugins:{
+        legend:{labels:{color:"#f8fafc"}},
+        tooltip:{
+          callbacks:{
+            label:function(context){
+              return context.dataset.label + ": " + num(context.parsed.y).toFixed(2) + "%";
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:"#94a3b8"},
+          grid:{color:"rgba(255,255,255,.06)"}
+        },
+        y:{
+          ticks:{
+            color:"#94a3b8",
+            callback:function(value){return value + "%";}
+          },
+          grid:{color:"rgba(255,255,255,.06)"}
+        }
+      }
+    }
+  });
+
+  onValue(historyRef,(snapshot)=>{
+    rawHistory = snapshot.val() || {};
+    renderHistory();
+
+    const keys = Object.keys(rawHistory).sort();
+    const latestKey = keys[keys.length - 1];
+
+    if(latestKey && rawHistory[latestKey] && rawHistory[latestKey].total_trades !== undefined){
+      setText("totalTrades",num(rawHistory[latestKey].total_trades));
+    }
+  });
+
+  function renderHistory(){
+    const labels = [];
+    const balanceGrowthData = [];
+    const floatingPctData = [];
+    const drawdownPctData = [];
+    const grouped = {};
+    const historyKeys = Object.keys(rawHistory || {}).sort();
+
+    historyKeys.forEach(date=>{
+      const item = rawHistory[date] || {};
+      let key = date;
+
+      if(analyticsMode === "weekly"){
+        key = getWeekKey(date);
+      }
+
+      if(analyticsMode === "monthly"){
+        key = String(date).substring(0,7);
+      }
+
+      grouped[key] = {
+        balance:num(item.balance),
+        floating_pl:num(item.floating_pl || item.floating),
+        profit_today:num(item.profit_today),
+        drawdown:num(item.drawdown),
+        drawdown_pct:item.drawdown_pct !== undefined ? num(item.drawdown_pct) : null
+      };
+    });
+
+    const orderedKeys = Object.keys(grouped).sort();
+    const firstKey = orderedKeys[0];
+    const firstBalance = firstKey ? num(grouped[firstKey].balance) : 0;
+    let latestMetrics = null;
+
+    orderedKeys.forEach(key=>{
+      const item = grouped[key];
+      const balance = num(item.balance);
+      const floating = num(item.floating_pl);
+      const profitToday = num(item.profit_today);
+
+      const balanceGrowth = firstBalance > 0 ? ((balance - firstBalance) / firstBalance) * 100 : 0;
+      const floatingPercent = balance > 0 ? (floating / balance) * 100 : 0;
+      const profitTodayPercent = balance > 0 ? (profitToday / balance) * 100 : 0;
+
+      let drawdownPercent = 0;
+      if(item.drawdown_pct !== null){
+        drawdownPercent = num(item.drawdown_pct);
+      }else if(balance > 0){
+        const rawDrawdown = Math.abs(num(item.drawdown));
+        drawdownPercent = rawDrawdown <= 100 ? rawDrawdown : (rawDrawdown / balance) * 100;
+      }
+
+      labels.push(key);
+      balanceGrowthData.push(Number(balanceGrowth.toFixed(2)));
+      floatingPctData.push(Number(floatingPercent.toFixed(2)));
+      drawdownPctData.push(Number(drawdownPercent.toFixed(2)));
+
+      latestMetrics = {
+        balanceGrowth,
+        floatingPercent,
+        profitTodayPercent,
+        drawdownPercent
+      };
+    });
+
+    if(labels.length === 0 && lastMonitorPoint){
+      const liveBalance = num(lastMonitorPoint.balance);
+      const liveFloatingPct = liveBalance > 0 ? (num(lastMonitorPoint.floating_pl) / liveBalance) * 100 : 0;
+
+      labels.push(lastMonitorPoint.label);
+      balanceGrowthData.push(0);
+      floatingPctData.push(Number(liveFloatingPct.toFixed(2)));
+      drawdownPctData.push(0);
+
+      latestMetrics = {
+        balanceGrowth:0,
+        floatingPercent:liveFloatingPct,
+        profitTodayPercent:0,
+        drawdownPercent:0
+      };
+    }
+
+    if(latestMetrics){
+      setMetric("balanceGrowthPct",latestMetrics.balanceGrowth);
+      setMetric("floatingPct",latestMetrics.floatingPercent);
+      setMetric("profitTodayPct",latestMetrics.profitTodayPercent);
+      setMetric("drawdownPct",latestMetrics.drawdownPercent,true);
+    }else{
+      setMetric("balanceGrowthPct",0);
+      setMetric("floatingPct",0);
+      setMetric("profitTodayPct",0);
+      setMetric("drawdownPct",0,true);
+    }
+
+    setChartEmpty(labels.length === 0);
+
+    historyChart.data.labels = labels;
+    historyChart.data.datasets[0].data = balanceGrowthData;
+    historyChart.data.datasets[1].data = floatingPctData;
+    historyChart.data.datasets[2].data = drawdownPctData;
+    historyChart.update();
+  }
+
+  function getWeekKey(dateStr){
+    const d = new Date(dateStr);
+    if(isNaN(d)){
+      return dateStr;
+    }
+
+    const firstDay = new Date(d.getFullYear(),0,1);
+    const pastDays = Math.floor((d - firstDay) / 86400000);
+    const week = Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+
+    return d.getFullYear() + "-W" + String(week).padStart(2,"0");
+  }
+
+  window.changeAnalytics = function(mode,btn){
+    analyticsMode = mode;
+    document.querySelectorAll(".filter button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderHistory();
+  };
+
+  window.logout = function(){
+    localStorage.clear();
+    window.location.href = "../index.html";
+  };
 </script>
 </body>
 </html>
