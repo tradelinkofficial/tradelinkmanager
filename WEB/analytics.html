@@ -57,44 +57,41 @@
     @media(max-width:1150px){.summary-grid{grid-template-columns:repeat(3,1fr)}.chart-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){body{padding:14px}.brand h1{font-size:21px}.summary-grid{grid-template-columns:repeat(2,1fr);gap:12px}.summary-card strong{font-size:21px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.filter-row{align-items:flex-start}.filter-actions{width:100%}.filter-btn{flex:1}.chart-box{min-height:300px}.kpi-grid{grid-template-columns:1fr}canvas{height:235px!important}}
   
-/* === TradeLink Global UI Patch: Dual Theme + Logo + Speed Dial === */
+/* === TL FORCED PATCH: Dual Theme + Smart Speed Dial + Logo Header === */
 :root{
   --tl-bg:#0f172a;
   --tl-bg2:#111827;
-  --tl-panel:rgba(30,41,59,.76);
+  --tl-panel:rgba(30,41,59,.78);
   --tl-border:rgba(255,255,255,.08);
   --tl-text:#f8fafc;
   --tl-muted:#94a3b8;
+  --tl-shadow:rgba(0,0,0,.30);
   --tl-blue:#3b82f6;
-  --tl-green:#22c55e;
   --tl-red:#ef4444;
-  --tl-shadow:rgba(0,0,0,.32);
 }
 html[data-theme="light"]{
   --tl-bg:#f8fafc;
   --tl-bg2:#e2e8f0;
-  --tl-panel:rgba(255,255,255,.88);
-  --tl-border:rgba(15,23,42,.10);
+  --tl-panel:rgba(255,255,255,.90);
+  --tl-border:rgba(15,23,42,.12);
   --tl-text:#0f172a;
   --tl-muted:#475569;
   --tl-shadow:rgba(15,23,42,.14);
 }
 html[data-theme="light"] body{
   background:
-    radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 32%),
+    radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 35%),
     linear-gradient(135deg,var(--tl-bg),var(--tl-bg2)) !important;
   color:var(--tl-text) !important;
 }
 html[data-theme="light"] .card,
 html[data-theme="light"] .panel,
 html[data-theme="light"] .box,
-html[data-theme="light"] .login-box,
-html[data-theme="light"] .container,
-html[data-theme="light"] .stat-card,
 html[data-theme="light"] .metric,
-html[data-theme="light"] .section,
-html[data-theme="light"] header,
-html[data-theme="light"] nav{
+html[data-theme="light"] .container,
+html[data-theme="light"] .login-box,
+html[data-theme="light"] section,
+html[data-theme="light"] header{
   background:var(--tl-panel) !important;
   color:var(--tl-text) !important;
   border-color:var(--tl-border) !important;
@@ -105,14 +102,6 @@ html[data-theme="light"] select,
 html[data-theme="light"] textarea{
   background:#fff !important;
   color:#0f172a !important;
-  border-color:rgba(15,23,42,.14) !important;
-}
-html[data-theme="light"] label,
-html[data-theme="light"] p,
-html[data-theme="light"] small,
-html[data-theme="light"] .muted,
-html[data-theme="light"] .label{
-  color:var(--tl-muted) !important;
 }
 .tl-brand-header{
   width:100%;
@@ -122,8 +111,8 @@ html[data-theme="light"] .label{
   justify-content:center;
   gap:4px;
   padding:10px 0 14px;
-  border-bottom:1px solid var(--tl-border);
   margin-bottom:12px;
+  border-bottom:1px solid var(--tl-border);
 }
 .tl-brand-logo{
   width:380px;
@@ -141,17 +130,17 @@ html[data-theme="light"] .label{
   text-align:center;
 }
 .tl-speed-dial{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  z-index:99999;
+  position:fixed !important;
+  right:18px !important;
+  bottom:18px !important;
+  z-index:999999 !important;
 }
 .tl-speed-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  align-items:flex-end;
-  margin-bottom:10px;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  align-items:flex-end !important;
+  margin-bottom:10px !important;
   opacity:0;
   pointer-events:none;
   transform:translateY(12px);
@@ -167,7 +156,7 @@ html[data-theme="light"] .label{
   border:none;
   text-decoration:none;
   color:#fff;
-  background:rgba(59,130,246,.95);
+  background:rgba(59,130,246,.96);
   border-radius:999px;
   box-shadow:0 16px 34px rgba(0,0,0,.30);
   backdrop-filter:blur(14px);
@@ -175,7 +164,7 @@ html[data-theme="light"] .label{
   font-weight:900;
   cursor:pointer;
   transition:.22s ease;
-  border:1px solid rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.14);
 }
 .tl-speed-item{
   min-height:42px;
@@ -197,38 +186,26 @@ html[data-theme="light"] .label{
   background:rgba(30,41,59,.94);
 }
 html[data-theme="light"] .tl-speed-item.ghost{
-  background:rgba(255,255,255,.95);
+  background:rgba(255,255,255,.96);
   color:#0f172a;
 }
 .tl-speed-main{
   width:58px;
   height:58px;
-  font-size:27px;
+  font-size:28px;
   display:flex;
   align-items:center;
   justify-content:center;
 }
+.tl-old-nav-hidden{
+  display:none !important;
+}
 @media(max-width:520px){
-  .tl-brand-logo{
-    width:285px;
-    max-width:86vw;
-  }
-  .tl-brand-motto{
-    font-size:8px;
-    letter-spacing:1.6px;
-  }
-  .tl-speed-dial{
-    right:14px;
-    bottom:14px;
-  }
-  .tl-speed-main{
-    width:54px;
-    height:54px;
-  }
-  .tl-speed-item{
-    min-height:38px;
-    font-size:11px;
-  }
+  .tl-brand-logo{width:285px;max-width:86vw;}
+  .tl-brand-motto{font-size:8px;letter-spacing:1.6px;}
+  .tl-speed-dial{right:14px !important;bottom:14px !important;}
+  .tl-speed-main{width:54px;height:54px;}
+  .tl-speed-item{min-height:38px;font-size:11px;}
 }
 
 </style>
@@ -239,7 +216,7 @@ html[data-theme="light"] .tl-speed-item.ghost{
 <div class="container" id="app" style="display:none;">
   <div class="topbar">
     <div class="brand">
-<!-- TradeLink Brand Header -->
+<!-- TL BRAND HEADER -->
 <div class="tl-brand-header">
   <img src="tradelink_logo_horizontal_premium.png" class="tl-brand-logo" alt="TradeLink Manager">
   <div class="tl-brand-motto">CONNECT • MONITOR • CONTROL • PROFIT</div>
@@ -249,11 +226,11 @@ html[data-theme="light"] .tl-speed-item.ghost{
   </div>
 
   <div class="nav">
-    
-    
-    
-    
-    
+    <a href="dashboard.html" class="tl-old-nav-hidden">Dashboard</a>
+    <a href="controlpanel.html" class="tl-old-nav-hidden">Control Panel</a>
+    <a href="setting.html" class="tl-old-nav-hidden">Setting</a>
+    <a href="analytics.html" class="tl-old-nav-hidden">Analytics</a>
+    <button class="logoutBtn" onclick="logoutClient()" class="tl-old-nav-hidden">Logout</button>
   </div>
 
   <div class="card lock-box" id="basicLock">
@@ -497,5 +474,50 @@ html[data-theme="light"] .tl-speed-item.ghost{
 
   init();
 </script>
+
+<!-- TL SMART SPEED DIAL -->
+<div class="tl-speed-dial" id="tlSpeedDial">
+  <div class="tl-speed-list">
+    <a class="tl-speed-item" href="dashboard.html">Dashboard</a><a class="tl-speed-item" href="controlpanel.html">Control Panel</a><a class="tl-speed-item" href="setting.html">Settings</a><button class="tl-speed-item ghost" id="tlThemeBtn" onclick="toggleTLTheme()">🌙 / ☀ Theme</button><a class="tl-speed-item ghost" href="EXPANSION/download_center.html">Download Center</a><a class="tl-speed-item ghost" href="EXPANSION/vps_guide.html">VPS Guide</a><button class="tl-speed-item red" onclick="tlLogout()">Logout</button>
+  </div>
+  <button class="tl-speed-main" id="tlSpeedMain" onclick="toggleTLSpeedDial()">+</button>
+</div>
+
+
+<script id="tl-global-ui-script">
+(function(){
+  function applyTheme(){
+    var saved = localStorage.getItem("tlTheme") || "dark";
+    document.documentElement.setAttribute("data-theme", saved);
+    var btn = document.getElementById("tlThemeBtn");
+    if(btn) btn.textContent = saved === "dark" ? "☀ White Theme" : "🌙 Dark Theme";
+  }
+
+  window.toggleTLTheme = function(){
+    var current = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", current);
+    localStorage.setItem("tlTheme", current);
+    var btn = document.getElementById("tlThemeBtn");
+    if(btn) btn.textContent = current === "dark" ? "☀ White Theme" : "🌙 Dark Theme";
+  };
+
+  window.toggleTLSpeedDial = function(){
+    var d = document.getElementById("tlSpeedDial");
+    var m = document.getElementById("tlSpeedMain");
+    if(!d || !m) return;
+    d.classList.toggle("open");
+    m.textContent = d.classList.contains("open") ? "×" : "+";
+  };
+
+  window.tlLogout = function(){
+    localStorage.clear();
+    window.location.href = "../index.html";
+  };
+
+  document.addEventListener("DOMContentLoaded", applyTheme);
+  applyTheme();
+})();
+</script>
+
 </body>
 </html>
