@@ -51,7 +51,24 @@
       animation:glow 3s ease-in-out infinite alternate;
     }
 
-    .logo p{
+    
+.main-logo{
+  width:320px;
+  max-width:82vw;
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 0 24px rgba(59,130,246,0.35));
+}
+
+@media(max-width:480px){
+  .main-logo{
+    width:240px;
+    max-width:85vw;
+  }
+}
+
+
+.logo p{
       margin-top:8px;
       font-size:13px;
       color:#94a3b8;
@@ -179,7 +196,7 @@
 
   <div class="login-box">
     <div class="logo">
-      <h1>TRADELINK MANAGER</h1>
+      <img src="tradelink_logo_horizontal_premium.png" class="main-logo" alt="TradeLink Manager">
       <p><span class="status-dot"></span>Premium EA Dashboard</p>
     </div>
 
@@ -198,7 +215,7 @@
     <div class="error" id="errorBox"></div>
 
     <div class="footer">
-      DARK TRADING PRO v1.00
+      TRADELINK MANAGER PRO v1.20
     </div>
   </div>
 
