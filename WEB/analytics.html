@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -57,180 +57,82 @@
     @media(max-width:1150px){.summary-grid{grid-template-columns:repeat(3,1fr)}.chart-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){body{padding:14px}.brand h1{font-size:21px}.summary-grid{grid-template-columns:repeat(2,1fr);gap:12px}.summary-card strong{font-size:21px}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}.filter-row{align-items:flex-start}.filter-actions{width:100%}.filter-btn{flex:1}.chart-box{min-height:300px}.kpi-grid{grid-template-columns:1fr}canvas{height:235px!important}}
   
-/* === TL FORCED PATCH: Dual Theme + Smart Speed Dial + Logo Header === */
-:root{
-  --tl-bg:#0f172a;
-  --tl-bg2:#111827;
-  --tl-panel:rgba(30,41,59,.78);
-  --tl-border:rgba(255,255,255,.08);
-  --tl-text:#f8fafc;
-  --tl-muted:#94a3b8;
-  --tl-shadow:rgba(0,0,0,.30);
-  --tl-blue:#3b82f6;
-  --tl-red:#ef4444;
-}
-html[data-theme="light"]{
-  --tl-bg:#f8fafc;
-  --tl-bg2:#e2e8f0;
-  --tl-panel:rgba(255,255,255,.90);
-  --tl-border:rgba(15,23,42,.12);
-  --tl-text:#0f172a;
-  --tl-muted:#475569;
-  --tl-shadow:rgba(15,23,42,.14);
-}
-html[data-theme="light"] body{
-  background:
-    radial-gradient(circle at top left, rgba(59,130,246,.12), transparent 35%),
-    linear-gradient(135deg,var(--tl-bg),var(--tl-bg2)) !important;
-  color:var(--tl-text) !important;
-}
-html[data-theme="light"] .card,
-html[data-theme="light"] .panel,
-html[data-theme="light"] .box,
-html[data-theme="light"] .metric,
-html[data-theme="light"] .container,
-html[data-theme="light"] .login-box,
-html[data-theme="light"] section,
-html[data-theme="light"] header{
-  background:var(--tl-panel) !important;
-  color:var(--tl-text) !important;
-  border-color:var(--tl-border) !important;
-  box-shadow:0 16px 42px var(--tl-shadow) !important;
-}
-html[data-theme="light"] input,
-html[data-theme="light"] select,
-html[data-theme="light"] textarea{
-  background:#fff !important;
-  color:#0f172a !important;
-}
-.tl-brand-header{
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  padding:10px 0 14px;
-  margin-bottom:12px;
-  border-bottom:1px solid var(--tl-border);
-}
-.tl-brand-logo{
-  width:380px;
-  max-width:90vw;
-  height:auto;
-  object-fit:contain;
-  filter:drop-shadow(0 0 22px rgba(59,130,246,.30));
-}
-.tl-brand-motto{
-  font-size:10px;
-  letter-spacing:2.6px;
-  color:var(--tl-muted);
-  font-weight:800;
-  text-transform:uppercase;
-  text-align:center;
-}
-.tl-speed-dial{
-  position:fixed !important;
-  right:18px !important;
-  bottom:18px !important;
-  z-index:999999 !important;
-}
-.tl-speed-list{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:8px !important;
-  align-items:flex-end !important;
-  margin-bottom:10px !important;
-  opacity:0;
-  pointer-events:none;
-  transform:translateY(12px);
-  transition:.22s ease;
-}
-.tl-speed-dial.open .tl-speed-list{
-  opacity:1;
-  pointer-events:auto;
-  transform:translateY(0);
-}
-.tl-speed-item,
-.tl-speed-main{
-  border:none;
-  text-decoration:none;
-  color:#fff;
-  background:rgba(59,130,246,.96);
-  border-radius:999px;
-  box-shadow:0 16px 34px rgba(0,0,0,.30);
-  backdrop-filter:blur(14px);
-  font-size:12px;
-  font-weight:900;
-  cursor:pointer;
-  transition:.22s ease;
-  border:1px solid rgba(255,255,255,.14);
-}
-.tl-speed-item{
-  min-height:42px;
-  padding:0 14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  white-space:nowrap;
-}
-.tl-speed-item:hover,
-.tl-speed-main:hover{
-  transform:translateY(-2px);
-  background:#2563eb;
-}
-.tl-speed-item.red{
-  background:rgba(239,68,68,.94);
-}
-.tl-speed-item.ghost{
-  background:rgba(30,41,59,.94);
-}
-html[data-theme="light"] .tl-speed-item.ghost{
-  background:rgba(255,255,255,.96);
-  color:#0f172a;
-}
-.tl-speed-main{
-  width:58px;
-  height:58px;
-  font-size:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.tl-old-nav-hidden{
-  display:none !important;
-}
-@media(max-width:520px){
-  .tl-brand-logo{width:285px;max-width:86vw;}
-  .tl-brand-motto{font-size:8px;letter-spacing:1.6px;}
-  .tl-speed-dial{right:14px !important;bottom:14px !important;}
-  .tl-speed-main{width:54px;height:54px;}
-  .tl-speed-item{min-height:38px;font-size:11px;}
-}
 
-</style>
+    /* TradeLink UI/UX PART2 v1.00 - Logo + Dual Theme + Smart Speed Dial */
+    :root{
+      --tl-bg:#0f172a;--tl-bg2:#111827;--tl-card:#1e293b;--tl-inner:#111827;--tl-text:#f8fafc;--tl-muted:#94a3b8;
+      --tl-border:rgba(255,255,255,.06);--tl-blue:#3b82f6;--tl-green:#22c55e;--tl-red:#ef4444;--tl-orange:#f59e0b;
+      --tl-shadow:0 20px 50px rgba(0,0,0,.25);--tl-glow:rgba(59,130,246,.28)
+    }
+    body.light-theme{
+      --tl-bg:#f8fafc;--tl-bg2:#e2e8f0;--tl-card:#ffffff;--tl-inner:#f1f5f9;--tl-text:#0f172a;--tl-muted:#475569;
+      --tl-border:rgba(15,23,42,.10);--tl-shadow:0 18px 45px rgba(15,23,42,.10);--tl-glow:rgba(37,99,235,.16);
+      background:radial-gradient(circle at top,rgba(59,130,246,.13),transparent 34%),linear-gradient(135deg,var(--tl-bg),var(--tl-bg2))!important;
+      color:var(--tl-text)!important;
+    }
+    body.light-theme .card,body.light-theme .summary-card,body.light-theme .note,body.light-theme .modal-box,body.light-theme .toast,body.light-theme .loading-box{
+      background:rgba(255,255,255,.88)!important;border-color:var(--tl-border)!important;color:var(--tl-text)!important;box-shadow:var(--tl-shadow)!important;
+    }
+    body.light-theme .mini,body.light-theme .mini-info,body.light-theme .metric-box,body.light-theme .chart-box,body.light-theme .chart-wrap,body.light-theme .filter button,body.light-theme .filter-btn,body.light-theme input,body.light-theme .table-wrap{
+      background:var(--tl-inner)!important;border-color:var(--tl-border)!important;color:var(--tl-text)!important;
+    }
+    body.light-theme .brand p,body.light-theme .row span:first-child,body.light-theme .card h3,body.light-theme .small,body.light-theme .muted,body.light-theme .activity span,body.light-theme .metric-label,body.light-theme .mini span,body.light-theme .mini-info span,body.light-theme .chart-head span{
+      color:var(--tl-muted)!important;
+    }
+    body.light-theme .row,body.light-theme .activity,body.light-theme th,body.light-theme td{border-color:var(--tl-border)!important}
+    body.light-theme th{background:rgba(226,232,240,.88)!important;color:var(--tl-muted)!important}
+    body.light-theme td,body.light-theme .mini strong,body.light-theme .mini-info strong,body.light-theme .summary-card strong{color:var(--tl-text)!important}
+    body.light-theme .nav{display:none!important}
+    .nav{display:none!important}
+    .brand{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+    .tl-logo{width:clamp(185px,30vw,270px);height:auto;display:block;filter:drop-shadow(0 0 16px rgba(59,130,246,.42))}
+    .tl-motto{font-size:11px!important;letter-spacing:1.8px!important;text-transform:uppercase;color:#94a3b8!important;margin-top:0!important;font-weight:800}
+    body.light-theme .tl-logo{filter:drop-shadow(0 8px 16px rgba(15,23,42,.14))}
+    body.light-theme .tl-motto{color:#475569!important}
+    .smart-speed-dial{position:fixed;right:18px;bottom:18px;z-index:120;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+    .speed-menu{display:flex;flex-direction:column;gap:9px;align-items:flex-end;opacity:0;transform:translateY(10px) scale(.98);pointer-events:none;transition:.22s ease}
+    .smart-speed-dial.open .speed-menu{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .speed-item,.speed-main{border:none;text-decoration:none;cursor:pointer;font-weight:900;color:#f8fafc;background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.10);box-shadow:0 16px 40px rgba(0,0,0,.28);transition:.22s ease;backdrop-filter:blur(14px)}
+    .speed-item{min-width:176px;text-align:left;border-radius:15px;padding:12px 14px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .speed-item:hover,.speed-main:hover{transform:translateY(-1px);box-shadow:0 0 22px rgba(59,130,246,.30)}
+    .speed-item.theme{background:rgba(59,130,246,.95)}
+    .speed-item.logout{background:rgba(239,68,68,.92);color:#fff}
+    .speed-main{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:29px;background:#3b82f6;color:#fff}
+    .speed-main span{display:block;line-height:1;transition:.22s ease}.smart-speed-dial.open .speed-main span{transform:rotate(45deg)}
+    body.light-theme .speed-item{background:rgba(255,255,255,.96);color:#0f172a;border-color:rgba(15,23,42,.10);box-shadow:0 14px 35px rgba(15,23,42,.14)}
+    body.light-theme .speed-item.theme{background:#2563eb;color:#fff}body.light-theme .speed-item.logout{background:#ef4444;color:#fff}
+    @media(max-width:520px){.topbar{padding-right:64px}.tl-logo{width:205px}.tl-motto{font-size:9px!important;letter-spacing:1.25px!important}.smart-speed-dial{right:14px;bottom:14px}.speed-main{width:54px;height:54px}.speed-item{min-width:168px;padding:12px 13px}}
+
+  </style>
 </head>
 <body>
+
+<div class="smart-speed-dial" id="smartSpeedDial">
+  <div class="speed-menu" id="speedMenu">
+    <button class="speed-item theme" type="button" onclick="toggleTradeLinkTheme()"><span id="themeIcon">🌙</span><strong>Theme</strong></button>
+    <a class="speed-item" href="dashboard.html"><span>📊</span><strong>Dashboard</strong></a>
+    <a class="speed-item" href="controlpanel.html"><span>🎛️</span><strong>Control Panel</strong></a>
+    <a class="speed-item" href="analytics.html"><span>📈</span><strong>Analytics</strong></a>
+    <a class="speed-item" href="setting.html"><span>⚙️</span><strong>Settings</strong></a>
+    <button class="speed-item logout" type="button" onclick="smartLogout()"><span>⏻</span><strong>Logout</strong></button>
+  </div>
+  <button class="speed-main" type="button" aria-label="Open Smart Speed Dial" onclick="toggleSmartSpeedDial()"><span>+</span></button>
+</div>
+
 <div class="loading" id="loadingScreen"><div class="loading-box"><div class="spinner"></div><h2>Loading Analytics</h2><p>TradeLink Manager is validating your account and loading realtime history.</p></div></div>
 
 <div class="container" id="app" style="display:none;">
   <div class="topbar">
-    <div class="brand">
-<!-- TL BRAND HEADER -->
-<div class="tl-brand-header">
-  <img src="tradelink_logo_horizontal_premium.png" class="tl-brand-logo" alt="TradeLink Manager">
-  <div class="tl-brand-motto">CONNECT • MONITOR • CONTROL • PROFIT</div>
-</div>
-<p>DARK TRADING PRO Advanced Analytics Graph v1.02</p></div>
+    <div class="brand"><img class="tl-logo" src="tradelink_logo_horizontal_premium.png" alt="TradeLink Logo"><p class="tl-motto">CONNECT • MONITOR • CONTROL • PROFIT</p></div>
     <div class="chip-row"><div class="package-chip" id="packageChip">PACKAGE</div><div class="live-chip"><span class="dot"></span> REALTIME ANALYTICS</div></div>
   </div>
 
   <div class="nav">
-    <a href="dashboard.html" class="tl-old-nav-hidden">Dashboard</a>
-    <a href="controlpanel.html" class="tl-old-nav-hidden">Control Panel</a>
-    <a href="setting.html" class="tl-old-nav-hidden">Setting</a>
-    <a href="analytics.html" class="tl-old-nav-hidden">Analytics</a>
-    <button class="logoutBtn" onclick="logoutClient()" class="tl-old-nav-hidden">Logout</button>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="controlpanel.html">Control Panel</a>
+    <a href="setting.html">Setting</a>
+    <a href="analytics.html">Analytics</a>
+    <button class="logoutBtn" onclick="logoutClient()">Logout</button>
   </div>
 
   <div class="card lock-box" id="basicLock">
@@ -475,48 +377,34 @@ html[data-theme="light"] .tl-speed-item.ghost{
   init();
 </script>
 
-<!-- TL SMART SPEED DIAL -->
-<div class="tl-speed-dial" id="tlSpeedDial">
-  <div class="tl-speed-list">
-    <a class="tl-speed-item" href="dashboard.html">Dashboard</a><a class="tl-speed-item" href="controlpanel.html">Control Panel</a><a class="tl-speed-item" href="setting.html">Settings</a><button class="tl-speed-item ghost" id="tlThemeBtn" onclick="toggleTLTheme()">🌙 / ☀ Theme</button><a class="tl-speed-item ghost" href="EXPANSION/download_center.html">Download Center</a><a class="tl-speed-item ghost" href="EXPANSION/vps_guide.html">VPS Guide</a><button class="tl-speed-item red" onclick="tlLogout()">Logout</button>
-  </div>
-  <button class="tl-speed-main" id="tlSpeedMain" onclick="toggleTLSpeedDial()">+</button>
-</div>
-
-
-<script id="tl-global-ui-script">
-(function(){
-  function applyTheme(){
-    var saved = localStorage.getItem("tlTheme") || "dark";
-    document.documentElement.setAttribute("data-theme", saved);
-    var btn = document.getElementById("tlThemeBtn");
-    if(btn) btn.textContent = saved === "dark" ? "☀ White Theme" : "🌙 Dark Theme";
-  }
-
-  window.toggleTLTheme = function(){
-    var current = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", current);
-    localStorage.setItem("tlTheme", current);
-    var btn = document.getElementById("tlThemeBtn");
-    if(btn) btn.textContent = current === "dark" ? "☀ White Theme" : "🌙 Dark Theme";
-  };
-
-  window.toggleTLSpeedDial = function(){
-    var d = document.getElementById("tlSpeedDial");
-    var m = document.getElementById("tlSpeedMain");
-    if(!d || !m) return;
-    d.classList.toggle("open");
-    m.textContent = d.classList.contains("open") ? "×" : "+";
-  };
-
-  window.tlLogout = function(){
-    localStorage.clear();
-    window.location.href = "../index.html";
-  };
-
-  document.addEventListener("DOMContentLoaded", applyTheme);
-  applyTheme();
-})();
+<script>
+  (function(){
+    const savedTheme = localStorage.getItem("tlTheme") || "dark";
+    if(savedTheme === "light"){ document.body.classList.add("light-theme"); }
+    window.updateThemeIcon = function(){
+      const icon = document.getElementById("themeIcon");
+      if(icon){ icon.innerText = document.body.classList.contains("light-theme") ? "☀" : "🌙"; }
+    };
+    window.toggleSmartSpeedDial = function(){
+      const dial = document.getElementById("smartSpeedDial");
+      if(dial){ dial.classList.toggle("open"); }
+    };
+    window.toggleTradeLinkTheme = function(){
+      document.body.classList.toggle("light-theme");
+      localStorage.setItem("tlTheme", document.body.classList.contains("light-theme") ? "light" : "dark");
+      window.updateThemeIcon();
+    };
+    window.smartLogout = function(){
+      localStorage.clear();
+      window.location.href = "../index.html";
+    };
+    document.addEventListener("click", function(e){
+      const dial = document.getElementById("smartSpeedDial");
+      if(dial && !dial.contains(e.target)){ dial.classList.remove("open"); }
+    });
+    document.addEventListener("DOMContentLoaded", window.updateThemeIcon);
+    window.updateThemeIcon();
+  })();
 </script>
 
 </body>
