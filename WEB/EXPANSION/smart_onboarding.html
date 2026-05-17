@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>TradeLink Manager | Smart Onboarding</title><style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+:root{--bg:#0f172a;--bg2:#111827;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;--disabled:#64748b;--blue:#3b82f6;--blue2:#2563eb;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--cyan:#06b6d4;--border:rgba(255,255,255,.06)}
+body{min-height:100vh;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,var(--bg),var(--bg2));color:var(--text);padding:18px}.container{max-width:1250px;margin:auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}.brand h1{font-size:24px;letter-spacing:1px;text-shadow:0 0 18px rgba(59,130,246,.7)}.brand p{font-size:13px;color:var(--muted);margin-top:4px}.nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.nav a,.nav button{border:none;text-decoration:none;padding:11px 15px;border-radius:12px;color:var(--text);font-size:13px;font-weight:bold;cursor:pointer;transition:.25s;background:rgba(30,41,59,.78);border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.18)}.nav a:hover,.nav button:hover{background:var(--card);transform:translateY(-1px)}.card{background:rgba(30,41,59,.78);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px);animation:fadeIn .5s ease;margin-bottom:16px}.card h3{color:var(--muted);font-size:13px;margin-bottom:12px;font-weight:normal;letter-spacing:.3px;text-transform:uppercase}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}.row span:first-child{color:var(--muted)}.row span:last-child{font-weight:bold;text-align:right}.badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.25px;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);background:rgba(100,116,139,.16);color:#cbd5e1}.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.blue{color:var(--blue)}.cyan{color:var(--cyan)}.muted{color:var(--muted)}.btn{border:none;border-radius:14px;padding:13px 16px;background:var(--blue);color:#fff;font-weight:900;cursor:pointer;transition:.25s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn:hover{background:var(--blue2);transform:translateY(-1px)}.btn.secondary{background:#111827;border:1px solid var(--border);color:var(--text)}.btn.green{background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.25);color:#86efac}.btn.orange{background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.25);color:#fcd34d}.input,select,input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:var(--text);font-size:14px;outline:none}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.step{position:relative;padding-left:34px}.step:before{content:attr(data-step);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.35);color:#93c5fd;font-size:12px;font-weight:900}.progress{height:10px;background:#111827;border:1px solid var(--border);border-radius:999px;overflow:hidden}.bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));width:0%;transition:.25s}.note{padding:12px;border-radius:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);color:#cbd5e1;font-size:12px;line-height:1.5}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@media(max-width:900px){.grid,.grid2{grid-template-columns:1fr}.nav{width:100%}.nav a,.nav button{flex:1;text-align:center}}@media(max-width:520px){body{padding:14px}.brand h1{font-size:21px}.card{padding:15px;border-radius:18px}.actions .btn{width:100%}.row{font-size:14px}}
+
+    /* TradeLink ADMIN EXPANSION UI v1.03 - Dashboard Main UI Match */
+    :root{
+      --tl-bg:#0f172a;--tl-bg2:#111827;--tl-card:#1e293b;--tl-inner:#111827;--tl-text:#f8fafc;--tl-muted:#94a3b8;
+      --tl-border:rgba(255,255,255,.06);--tl-blue:#3b82f6;--tl-blue2:#2563eb;--tl-green:#22c55e;--tl-red:#ef4444;--tl-orange:#f59e0b;--tl-cyan:#06b6d4;
+      --tl-shadow:0 20px 50px rgba(0,0,0,.25);--tl-glow:rgba(59,130,246,.28)
+    }
+    body{
+      background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 34%),linear-gradient(135deg,var(--tl-bg),var(--tl-bg2))!important;
+      color:var(--tl-text)!important;
+    }
+    body.light-theme{
+      --tl-bg:#f8fafc;--tl-bg2:#e2e8f0;--tl-card:#ffffff;--tl-inner:#f1f5f9;--tl-text:#0f172a;--tl-muted:#475569;
+      --tl-border:rgba(15,23,42,.10);--tl-shadow:0 18px 45px rgba(15,23,42,.10);--tl-glow:rgba(37,99,235,.16);
+      background:radial-gradient(circle at top,rgba(59,130,246,.13),transparent 34%),linear-gradient(135deg,var(--tl-bg),var(--tl-bg2))!important;
+      color:var(--tl-text)!important;
+    }
+    .card,.summary-card,.note,.modal-box,.toast,.loading-box{
+      background:rgba(30,41,59,.78)!important;border-color:var(--tl-border)!important;color:var(--tl-text)!important;box-shadow:var(--tl-shadow)!important;
+    }
+    body.light-theme .card,body.light-theme .summary-card,body.light-theme .note,body.light-theme .modal-box,body.light-theme .toast,body.light-theme .loading-box{
+      background:rgba(255,255,255,.88)!important;border-color:var(--tl-border)!important;color:var(--tl-text)!important;box-shadow:var(--tl-shadow)!important;
+    }
+    body.light-theme .mini,body.light-theme .mini-info,body.light-theme .metric-box,body.light-theme .chart-box,body.light-theme .chart-wrap,body.light-theme .filter button,body.light-theme .filter-btn,body.light-theme input,body.light-theme select,body.light-theme .table-wrap,body.light-theme .row,body.light-theme .step:before{
+      background:var(--tl-inner)!important;border-color:var(--tl-border)!important;color:var(--tl-text)!important;
+    }
+    body.light-theme .brand p,body.light-theme .row span:first-child,body.light-theme .card h3,body.light-theme .small,body.light-theme .muted,body.light-theme .activity span,body.light-theme .metric-label,body.light-theme .mini span,body.light-theme .mini-info span,body.light-theme .chart-head span{
+      color:var(--tl-muted)!important;
+    }
+    body.light-theme .row,body.light-theme .activity,body.light-theme th,body.light-theme td{border-color:var(--tl-border)!important}
+    body.light-theme th{background:rgba(226,232,240,.88)!important;color:var(--tl-muted)!important}
+    body.light-theme td,body.light-theme .mini strong,body.light-theme .mini-info strong,body.light-theme .summary-card strong{color:var(--tl-text)!important}
+    .nav{display:none!important}
+    .brand{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important}
+    .brand h1{display:none!important}
+    .tl-logo{width:clamp(185px,30vw,270px);height:auto;display:block;filter:drop-shadow(0 0 16px rgba(59,130,246,.42))}
+    .tl-motto{font-size:11px!important;letter-spacing:1.8px!important;text-transform:uppercase;color:#94a3b8!important;margin-top:0!important;font-weight:800}
+    body.light-theme .tl-logo{filter:drop-shadow(0 8px 16px rgba(15,23,42,.14))}
+    body.light-theme .tl-motto{color:#475569!important}
+    .smart-speed-dial{position:fixed;right:18px;bottom:18px;z-index:120;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+    .speed-menu{display:flex;flex-direction:column;gap:9px;align-items:flex-end;opacity:0;transform:translateY(10px) scale(.98);pointer-events:none;transition:.22s ease}
+    .smart-speed-dial.open .speed-menu{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .speed-item,.speed-main{border:none;text-decoration:none;cursor:pointer;font-weight:900;color:#f8fafc;background:rgba(30,41,59,.94);border:1px solid rgba(255,255,255,.10);box-shadow:0 16px 40px rgba(0,0,0,.28);transition:.22s ease;backdrop-filter:blur(14px)}
+    .speed-item{min-width:210px;text-align:left;border-radius:15px;padding:12px 14px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .speed-item:hover,.speed-main:hover{transform:translateY(-1px);box-shadow:0 0 22px rgba(59,130,246,.30)}
+    .speed-item.theme{background:rgba(59,130,246,.95)}
+    .speed-item.logout{background:rgba(239,68,68,.92);color:#fff}
+    .speed-main{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:29px;background:#3b82f6;color:#fff}
+    .speed-main span{display:block;line-height:1;transition:.22s ease}.smart-speed-dial.open .speed-main span{transform:rotate(45deg)}
+    body.light-theme .speed-item{background:rgba(255,255,255,.96);color:#0f172a;border-color:rgba(15,23,42,.10);box-shadow:0 14px 35px rgba(15,23,42,.14)}
+    body.light-theme .speed-item.theme{background:#2563eb;color:#fff}body.light-theme .speed-item.logout{background:#ef4444;color:#fff}
+    @media(max-width:768px){body{padding:12px!important}.container{max-width:100%!important}.topbar{align-items:flex-start!important;padding-right:64px}.card{padding:15px!important;border-radius:18px!important;margin-bottom:12px!important}.grid,.grid2,.summary-grid,.admin-row,.form-grid,.permission-grid,.analytics-metrics{grid-template-columns:1fr!important;gap:12px!important}.row{padding:12px 0!important;font-size:14px!important}.actions{display:grid!important;grid-template-columns:1fr!important}.btn,.small-btn,.primary-btn,.secondary-btn,.danger-btn{min-height:42px!important;width:100%!important}.tl-logo{width:205px}.tl-motto{font-size:9px!important;letter-spacing:1.25px!important}.smart-speed-dial{right:14px;bottom:14px}.speed-main{width:54px;height:54px}.speed-item{min-width:210px;padding:12px 13px}}
+
+
+</style></head><body>
+
+
+
+<div class="smart-speed-dial" id="smartSpeedDial">
+  <div class="speed-menu" id="speedMenu">
+    <button class="speed-item theme" type="button" onclick="toggleTradeLinkTheme()"><span id="themeIcon">🌙</span><strong>Theme</strong></button>
+    <a class="speed-item" href="../admin.html"><span>🏠</span><strong>Admin Home</strong></a>
+    <a class="speed-item" href="../admin.html#clientManagementSection"><span>👥</span><strong>Client Management</strong></a>
+    <a class="speed-item" href="smart_onboarding.html"><span>🧠</span><strong>Smart Onboarding</strong></a>
+    <a class="speed-item" href="smart_connect_flow.html"><span>🔗</span><strong>Smart Connect Flow</strong></a>
+    <a class="speed-item" href="deployment_wizard.html"><span>🚀</span><strong>Deployment Wizard</strong></a>
+    <a class="speed-item" href="vps_guide.html"><span>🖥</span><strong>VPS Guide</strong></a>
+    <a class="speed-item" href="download_center.html"><span>⬇</span><strong>Download Center</strong></a>
+    <a class="speed-item" href="qa_panel.html"><span>🧪</span><strong>QA Panel</strong></a>
+    <a class="speed-item" href="admin_analytics.html"><span>📊</span><strong>Admin Analytics</strong></a>
+    <a class="speed-item" href="notification_center.html"><span>🔔</span><strong>Notifications</strong></a>
+    <button class="speed-item logout" type="button" onclick="smartLogout()"><span>⏻</span><strong>Logout</strong></button>
+  </div>
+  <button class="speed-main" type="button" aria-label="Open Smart Speed Dial" onclick="toggleSmartSpeedDial()"><span>+</span></button>
+</div>
+<div class="container"><div class="topbar"><div class="brand"><img class="tl-logo" src="../tradelink_logo_horizontal_premium.png" alt="TradeLink Logo"><p class="tl-motto">CONNECT • MONITOR • CONTROL • PROFIT</p><p>Smart onboarding UI + account status flow</p></div><span class="badge">v1.02</span></div><div class="nav"><a href="../dashboard.html">Dashboard</a><a href="../controlpanel.html">Control Panel</a><a href="../setting.html">Setting</a><a href="../analytics.html">Analytics</a></div>
+<div class="card"><h3>Smart Onboarding UI</h3><div class="progress"><div class="bar" id="onboardBar"></div></div><p class="muted" style="margin-top:10px" id="onboardText">Checking account onboarding status...</p></div>
+<div class="grid">
+ <div class="card step" data-step="1"><h3>Login Ready</h3><p class="muted">Client session detected from localStorage.</p><div id="s1" class="badge">Pending</div></div>
+ <div class="card step" data-step="2"><h3>Profile Ready</h3><p class="muted">Client profile package and status available.</p><div id="s2" class="badge">Pending</div></div>
+ <div class="card step" data-step="3"><h3>License Ready</h3><p class="muted">Expiry date and device lock status checked.</p><div id="s3" class="badge">Pending</div></div>
+ <div class="card step" data-step="4"><h3>MT5 Connected</h3><p class="muted">EA status reports CONNECTED / EA_PAUSE / DISCONNECTED.</p><div id="s4" class="badge">Pending</div></div>
+ <div class="card step" data-step="5"><h3>Account Bound</h3><p class="muted">Device ID binding exists when device lock is active.</p><div id="s5" class="badge">Pending</div></div>
+ <div class="card step" data-step="6"><h3>Ready To Trade</h3><p class="muted">All required setup checks completed.</p><div id="s6" class="badge">Pending</div></div>
+</div></div><script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";import{getDatabase,ref,onValue}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";const app=initializeApp({databaseURL:"https://tradelinkmanager-4c8fb-default-rtdb.asia-southeast1.firebasedatabase.app/"});const db=getDatabase(app);const clientId=localStorage.getItem('clientId');function ok(id,v,t){const e=document.getElementById(id);e.textContent=t||(v?'Done':'Pending');e.style.color=v?'#86efac':'#fcd34d';e.style.borderColor=v?'rgba(34,197,94,.35)':'rgba(245,158,11,.35)';e.style.background=v?'rgba(34,197,94,.14)':'rgba(245,158,11,.14)'}let state={login:!!clientId,profile:false,license:false,mt5:false,binding:false};function render(){ok('s1',state.login);ok('s2',state.profile);ok('s3',state.license);ok('s4',state.mt5);ok('s5',state.binding);const ready=state.login&&state.profile&&state.license&&state.mt5&&(state.binding||true);ok('s6',ready,ready?'Ready':'Not Ready');let count=Object.values(state).filter(Boolean).length+(ready?1:0);document.getElementById('onboardBar').style.width=Math.round(count/6*100)+'%';document.getElementById('onboardText').textContent=count+'/6 onboarding checks completed.'}render();if(clientId){onValue(ref(db,'TradeLink/clients/'+clientId+'/profile'),s=>{const d=s.val()||{};state.profile=!!d.package&&d.status==='active';render()});onValue(ref(db,'TradeLink/clients/'+clientId+'/license'),s=>{const d=s.val()||{};state.license=!!d.expiryDate;state.binding=!!d.deviceId||d.deviceLock!==true;render()});onValue(ref(db,'TradeLink/clients/'+clientId+'/monitor'),s=>{const d=s.val()||{};state.mt5=String(d.mt5_signal||'').toUpperCase()==='CONNECTED';render()})}
+</script>
+<script>
+(function(){
+  const savedTheme = localStorage.getItem("tlTheme") || "dark";
+  if(savedTheme === "light"){ document.body.classList.add("light-theme"); }
+  const icon = document.getElementById("themeIcon");
+  if(icon){ icon.innerText = savedTheme === "light" ? "☀" : "🌙"; }
+})();
+window.toggleSmartSpeedDial = function(){
+  const dial = document.getElementById("smartSpeedDial");
+  if(dial){ dial.classList.toggle("open"); }
+};
+window.toggleTradeLinkTheme = function(){
+  document.body.classList.toggle("light-theme");
+  const isLight = document.body.classList.contains("light-theme");
+  localStorage.setItem("tlTheme", isLight ? "light" : "dark");
+  const icon = document.getElementById("themeIcon");
+  if(icon){ icon.innerText = isLight ? "☀" : "🌙"; }
+};
+window.smartLogout = function(){
+  localStorage.clear();
+  window.location.href = "../admin-login.html";
+};
+</script>
+
+
+<script>
+(function(){
+  function applyTradeLinkTheme(){
+    const savedTheme = localStorage.getItem("tlTheme") || "dark";
+    if(savedTheme === "light"){ document.body.classList.add("light-theme"); }
+    else{ document.body.classList.remove("light-theme"); }
+    const icon = document.getElementById("themeIcon");
+    if(icon){ icon.innerText = savedTheme === "light" ? "☀" : "🌙"; }
+  }
+  window.toggleSmartSpeedDial = function(){
+    const dial = document.getElementById("smartSpeedDial");
+    if(dial){ dial.classList.toggle("open"); }
+  };
+  window.toggleTradeLinkTheme = function(){
+    const isLight = !document.body.classList.contains("light-theme");
+    document.body.classList.toggle("light-theme", isLight);
+    localStorage.setItem("tlTheme", isLight ? "light" : "dark");
+    const icon = document.getElementById("themeIcon");
+    if(icon){ icon.innerText = isLight ? "☀" : "🌙"; }
+  };
+  window.smartLogout = function(){
+    localStorage.clear();
+    window.location.href = "../admin-login.html";
+  };
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", applyTradeLinkTheme);
+  }else{
+    applyTradeLinkTheme();
+  }
+})();
+</script>
+
+</body></html>
