@@ -45,6 +45,11 @@
 
     .input-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px;align-items:center;position:relative}
     .input-row label{grid-column:1 / -1;color:#94a3b8;font-size:13px;margin-bottom:-2px}
+    .symbol-card{background:linear-gradient(180deg,rgba(30,41,59,.88),rgba(15,23,42,.76));border-color:rgba(59,130,246,.18)}
+    .symbol-input-wrap{display:grid;grid-template-columns:1fr;gap:8px}
+    .symbol-input-wrap label{color:#94a3b8;font-size:13px;font-weight:bold}
+    .symbol-helper{color:#94a3b8;font-size:12px;line-height:1.45}
+    .symbol-preview{display:inline-flex;align-items:center;justify-content:center;width:max-content;max-width:100%;padding:7px 10px;border-radius:999px;background:rgba(59,130,246,.13);border:1px solid rgba(59,130,246,.28);color:#bfdbfe;font-size:11px;font-weight:900;letter-spacing:.3px;text-transform:uppercase}
     input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:#f8fafc;font-size:15px;outline:none;transition:.25s}
     input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
     input:disabled{opacity:.7;cursor:not-allowed}
@@ -169,6 +174,16 @@
     <div class="demo-disabled-note" id="demoDisabledNote">Demo mode command disabled.</div>
   </div>
 
+  <div class="card compact symbol-card">
+    <h3>Target Pair Control</h3>
+    <div class="symbol-input-wrap">
+      <label for="targetSymbolInput">Pair / Symbol</label>
+      <input type="text" id="targetSymbolInput" placeholder="Example: XAUUSD" autocomplete="off" oninput="updateTargetSymbolPreview()">
+      <div class="symbol-helper">Leave empty = apply all pairs</div>
+      <div class="symbol-preview" id="targetSymbolPreview">TARGET: ALL PAIRS</div>
+    </div>
+  </div>
+
   <div class="grid">
     <div class="card">
       <h3>Trading Actions</h3>
@@ -274,6 +289,7 @@
   let pendingAction = null;
 
   document.getElementById("clientIdView").innerText = clientId;
+  window.updateTargetSymbolPreview && window.updateTargetSymbolPreview();
 
   function nowText(){
     const d = new Date();
@@ -390,11 +406,31 @@
     return basicAllowed.includes(commandKey);
   }
 
+  function getTargetSymbol(){
+    const input = document.getElementById("targetSymbolInput");
+    if(!input) return "";
+    return String(input.value || "").trim().toUpperCase();
+  }
+
+  window.updateTargetSymbolPreview = function(){
+    const target = getTargetSymbol();
+    const preview = document.getElementById("targetSymbolPreview");
+    if(preview){
+      preview.innerText = target ? ("TARGET: " + target) : "TARGET: ALL PAIRS";
+    }
+  };
+
+  function commandScopeText(){
+    const target = getTargetSymbol();
+    return target ? ("Target pair: " + target) : "Target: all pairs";
+  }
+
   async function sendCommand(payload, label){
     if(isDemoMode){ showToast("Demo mode command disabled."); return; }
+    const targetSymbol = getTargetSymbol();
     try{
-      await update(commandRef, {...payload, updatedAt: nowText()});
-      showToast(label + " command sent.");
+      await update(commandRef, {...payload, target_symbol: targetSymbol, updatedAt: nowText()});
+      showToast(label + " command sent" + (targetSymbol ? " for " + targetSymbol : " for all pairs") + ".");
     }catch(error){
       console.error(error);
       showToast("Command failed. Check Firebase rules.");
@@ -406,7 +442,7 @@
     if(!canUseCommand(commandKey)){ showToast("This function requires PRO package."); return; }
     pendingAction = { payload: {[commandKey]: value}, label };
     document.getElementById("modalTitle").innerText = label;
-    document.getElementById("modalMessage").innerText = "Confirm to send command: " + label + "?";
+    document.getElementById("modalMessage").innerText = "Confirm to send command: " + label + "? " + commandScopeText();
     document.getElementById("confirmModal").style.display = "flex";
   };
 
@@ -418,7 +454,7 @@
     if(!value || value <= 0){ showToast("Please enter valid value."); return; }
     pendingAction = { payload: {[commandKey]: value}, label };
     document.getElementById("modalTitle").innerText = label;
-    document.getElementById("modalMessage").innerText = "Confirm to send " + label + " value: " + value + "?";
+    document.getElementById("modalMessage").innerText = "Confirm to send " + label + " value: " + value + "? " + commandScopeText();
     document.getElementById("confirmModal").style.display = "flex";
   };
 
